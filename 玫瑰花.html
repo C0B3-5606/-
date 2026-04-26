@@ -213,11 +213,11 @@
                 <button class="control-btn" onclick="changeFlower('sunflower')">🌻 向日葵</button>
                 <button class="control-btn" onclick="changeFlower('lily')">🌸 百合</button>
                 <button class="control-btn" onclick="changeFlower('tulip')">🌷 郁金香</button>
-                <button class="control-btn" onclick="changeFlower('cherry')">🌺 樱花</button>
+                <button class="control-btn" onclick="changeFlower('cherry')">🌸 樱花</button>
                 <button class="control-btn" onclick="changeFlower('daisy')">🌼 雏菊</button>
                 <button class="control-btn" onclick="changeFlower('lavender')">💜 薰衣草</button>
                 <button class="control-btn" onclick="changeFlower('peony')">🌺 牡丹</button>
-                <button class="control-btn" onclick="changeFlower('dandelion')">🌼 蒲公英</button>
+                <button class="control-btn" onclick="changeFlower('dandelion')">🌿 蒲公英</button>
                 <button class="control-btn" onclick="toggleAnimation()">⏸️ 暂停</button>
                 <button class="control-btn" onclick="toggleDayMode()">🌙 黑夜</button>
                 <button class="control-btn" onclick="resetSystem()">🔄 重置</button>
@@ -526,28 +526,41 @@
             ctx.restore();
         }
         drawSunflowerPetal(ctx, angle, size, s) {
-            ctx.save(); ctx.rotate(angle * Math.PI / 180); ctx.translate(size * 0.3, 0);
-            const petalGrad = ctx.createLinearGradient(0, 0, size * 1.2, 0);
-            petalGrad.addColorStop(0, '#d4a020'); petalGrad.addColorStop(0.5, '#f0c030'); petalGrad.addColorStop(1, '#ffe050');
-            ctx.beginPath(); ctx.moveTo(0, -8 * s);
-            ctx.bezierCurveTo(size * 0.3, -10 * s, size * 0.8, -8 * s, size * 1.2, 0);
-            ctx.bezierCurveTo(size * 0.8, 8 * s, size * 0.3, 10 * s, 0, 8 * s);
+            ctx.save(); ctx.rotate(angle * Math.PI / 180); ctx.translate(size * 0.4, 0);
+            // 向日葵花瓣 - 金黄色渐变，边缘有细微缺刻
+            const petalGrad = ctx.createLinearGradient(0, -8 * s, size * 1.3, 0);
+            petalGrad.addColorStop(0, '#c89020'); 
+            petalGrad.addColorStop(0.3, '#e8b828'); 
+            petalGrad.addColorStop(0.6, '#f5c830'); 
+            petalGrad.addColorStop(1, '#ffe050');
+            ctx.beginPath(); ctx.moveTo(0, -10 * s);
+            // 花瓣形状：底部宽，向尖端变窄
+            ctx.bezierCurveTo(size * 0.2, -12 * s, size * 0.9, -10 * s, size * 1.3, 0);
+            ctx.bezierCurveTo(size * 0.9, 10 * s, size * 0.2, 12 * s, 0, 10 * s);
             ctx.closePath(); ctx.fillStyle = petalGrad; ctx.fill();
-            ctx.beginPath(); ctx.ellipse(size * 1.15, 0, 4 * s, 6 * s, 0, 0, Math.PI * 2);
-            ctx.fillStyle = '#c08010'; ctx.fill(); ctx.restore();
+            // 花瓣中脉
+            ctx.beginPath(); ctx.moveTo(0, -8 * s); ctx.lineTo(size * 1.1, 0); ctx.lineTo(0, 8 * s);
+            ctx.strokeStyle = 'rgba(180, 120, 20, 0.3)'; ctx.lineWidth = 1 * s; ctx.stroke();
+            ctx.restore();
         }
         drawCenter(ctx, x, y, size, s) {
+            // 向日葵花盘 - 深棕色的蜂窝状螺旋
             const centerGrad = ctx.createRadialGradient(x, y, 0, x, y, size);
-            centerGrad.addColorStop(0, '#4a3010'); centerGrad.addColorStop(0.7, '#3a2808'); centerGrad.addColorStop(1, '#2a1805');
+            centerGrad.addColorStop(0, '#5a3a18'); 
+            centerGrad.addColorStop(0.4, '#4a2a10'); 
+            centerGrad.addColorStop(0.8, '#3a1a08'); 
+            centerGrad.addColorStop(1, '#2a1005');
             ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fillStyle = centerGrad; ctx.fill();
-            for (let ring = 0; ring < 5; ring++) {
-                const r = size * (0.2 + ring * 0.15); const dots = 8 + ring * 6;
+            // 蜂巢状螺旋图案
+            for (let ring = 0; ring < 6; ring++) {
+                const r = size * (0.15 + ring * 0.14); 
+                const dots = Math.floor(8 + ring * 8);
                 for (let i = 0; i < dots; i++) {
-                    const angle = (360 / dots) * i + ring * 15;
+                    const angle = (360 / dots) * i + ring * 20;
                     const px = x + Math.cos(angle * Math.PI / 180) * r;
                     const py = y + Math.sin(angle * Math.PI / 180) * r;
-                    ctx.beginPath(); ctx.arc(px, py, 2 * s, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(${60 + ring * 10}, ${40 + ring * 5}, ${10 + ring * 3}, 0.8)`; ctx.fill();
+                    ctx.beginPath(); ctx.arc(px, py, 2.5 * s, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${30 + ring * 8}, ${15 + ring * 5}, ${5 + ring * 2}, 0.9)`; ctx.fill();
                 }
             }
         }
@@ -591,49 +604,70 @@
             ctx.strokeStyle = '#2d5a27'; ctx.lineWidth = 1 * size; ctx.stroke(); ctx.restore();
         }
         drawLilyFlower(ctx, s, breathe) {
-            const petalCount = 6; const petalSize = 60 * s * breathe;
+            // 百合花：6个花瓣向外展开，花瓣向后弯曲
+            const petalCount = 6; const petalSize = 55 * s * breathe;
             for (let i = 0; i < petalCount; i++) {
                 const angle = (360 / petalCount) * i - 90;
-                const bendAngle = 30 + Math.sin(this.time + i) * 5;
+                // 百合花瓣向外向上弯曲
+                const bendAngle = 45 + Math.sin(this.time + i) * 8;
                 this.drawLilyPetal(ctx, angle, petalSize, bendAngle, s, i);
             }
+            // 百合的花蕊 - 6个雄蕊围绕中心柱头
             this.drawLilyStamens(ctx, 0, 0, s);
-            ctx.beginPath(); ctx.moveTo(0, 10 * s); ctx.lineTo(0, 25 * s);
-            ctx.strokeStyle = '#3d8a37'; ctx.lineWidth = 3 * s; ctx.stroke();
-            for (let i = 0; i < 3; i++) {
-                const angle = (360 / 3) * i - 90;
-                ctx.save(); ctx.translate(0, 25 * s); ctx.rotate(angle * Math.PI / 180);
-                ctx.beginPath(); ctx.ellipse(8 * s, 0, 6 * s, 10 * s, 0, 0, Math.PI * 2);
-                ctx.fillStyle = '#c07037'; ctx.fill(); ctx.restore();
-            }
         }
         drawLilyPetal(ctx, angle, size, bendAngle, s, idx) {
             ctx.save(); ctx.rotate(angle * Math.PI / 180);
-            const petalGrad = ctx.createLinearGradient(0, 0, size * 1.5, -size * 0.5);
-            const hue = idx % 2 === 0 ? 330 : 320;
-            petalGrad.addColorStop(0, `hsla(${hue}, 40%, 95%, 0.95)`);
-            petalGrad.addColorStop(0.5, `hsla(${hue + 10}, 35%, 90%, 0.9)`);
-            petalGrad.addColorStop(1, `hsla(${hue + 15}, 50%, 85%, 0.7)`);
+            // 百合花瓣：白色或淡粉色，向后弯曲
+            const petalGrad = ctx.createLinearGradient(0, 0, size * 1.4, -size * 0.6);
+            // 白色百合：纯白带淡绿底
+            petalGrad.addColorStop(0, 'hsla(120, 20%, 95%, 0.95)');  // 基部淡绿
+            petalGrad.addColorStop(0.2, 'hsla(0, 0%, 98%, 0.95)');   // 白色
+            petalGrad.addColorStop(0.6, 'hsla(0, 0%, 95%, 0.9)');    // 淡白
+            petalGrad.addColorStop(1, 'hsla(0, 0%, 90%, 0.8)');     // 尖端略暗
             ctx.beginPath(); ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(size * 0.3, -size * 0.2, size * 0.8, -size * 0.6, size * 1.2, -size * 0.8 + bendAngle * 0.3);
-            ctx.bezierCurveTo(size * 0.8, -size * 0.3, size * 0.3, -size * 0.1, 0, 0);
+            // 百合花瓣形状：长椭圆形，向后向上弯曲
+            ctx.bezierCurveTo(size * 0.3, -size * 0.15, size * 0.7, -size * 0.4, size * 1.1, -size * 0.7 + bendAngle * 0.25);
+            ctx.bezierCurveTo(size * 0.7, -size * 0.3, size * 0.3, -size * 0.1, 0, 0);
             ctx.fillStyle = petalGrad; ctx.fill();
-            for (let j = 0; j < 5; j++) {
-                const spotX = size * (0.3 + j * 0.15); const spotY = -size * (0.1 + j * 0.08);
-                ctx.beginPath(); ctx.ellipse(spotX, spotY, 2 * s, 1.5 * s, 0, 0, Math.PI * 2);
-                ctx.fillStyle = `hsla(${hue + 30}, 60%, 40%, 0.4)`; ctx.fill();
+            // 花粉斑点 - 百合特征
+            for (let j = 0; j < 6; j++) {
+                const spotX = size * (0.25 + j * 0.12); 
+                const spotY = -size * (0.08 + j * 0.06);
+                ctx.beginPath(); ctx.ellipse(spotX, spotY, 2.5 * s, 1.8 * s, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'hsla(35, 80%, 40%, 0.5)'; ctx.fill();
             }
+            // 花瓣中脉
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(size * 0.5, -size * 0.3, size * 0.9, -size * 0.5);
+            ctx.strokeStyle = 'hsla(120, 15%, 85%, 0.3)'; ctx.lineWidth = 1 * s; ctx.stroke();
             ctx.restore();
         }
         drawLilyStamens(ctx, x, y, s) {
+            // 百合的雄蕊和雌蕊 - 长而明显
+            const stamenLen = 30 * s;
             for (let i = 0; i < 6; i++) {
-                const angle = (360 / 6) * i; const len = 25 * s;
+                const angle = (360 / 6) * i;
                 ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
-                ctx.beginPath(); ctx.moveTo(0, 5 * s); ctx.lineTo(0, 5 * s + len);
-                ctx.strokeStyle = '#8a7037'; ctx.lineWidth = 1.5 * s; ctx.stroke();
-                ctx.beginPath(); ctx.ellipse(0, 5 * s + len + 4 * s, 4 * s, 6 * s, 0, 0, Math.PI * 2);
-                ctx.fillStyle = '#d4a020'; ctx.fill(); ctx.restore();
+                // 花丝
+                ctx.beginPath(); ctx.moveTo(0, 8 * s); ctx.lineTo(0, 8 * s + stamenLen);
+                ctx.strokeStyle = '#a08030'; ctx.lineWidth = 1.5 * s; ctx.stroke();
+                // 花药（带花粉）
+                ctx.beginPath(); ctx.ellipse(0, 8 * s + stamenLen + 5 * s, 5 * s, 8 * s, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#d4a020'; ctx.fill();
+                ctx.restore();
             }
+            // 雌蕊柱头 - 百合特有：三裂柱头
+            ctx.save(); ctx.translate(x, y);
+            ctx.beginPath(); ctx.moveTo(0, 5 * s); ctx.lineTo(0, 20 * s);
+            ctx.strokeStyle = '#5a8030'; ctx.lineWidth = 2 * s; ctx.stroke();
+            // 三裂柱头
+            for (let i = 0; i < 3; i++) {
+                const a = (360 / 3) * i - 90;
+                ctx.save(); ctx.translate(0, 22 * s); ctx.rotate(a * Math.PI / 180);
+                ctx.beginPath(); ctx.ellipse(0, -6 * s, 5 * s, 8 * s, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#c07030'; ctx.fill();
+                ctx.restore();
+            }
+            ctx.restore();
         }
     }
 
@@ -675,33 +709,56 @@
             ctx.closePath(); ctx.fillStyle = leafGrad; ctx.fill(); ctx.restore();
         }
         drawTulipFlower(ctx, s) {
+            // 郁金香颜色 - 经典红、黄、紫、粉、白
             const colors = [{ h: 350, name: '红' }, { h: 45, name: '黄' }, { h: 280, name: '紫' }, { h: 0, name: '白' }, { h: 330, name: '粉' }];
             const colorIdx = Math.floor((Math.sin(this.time * 0.5) + 1) * 2.5) % 5;
-            const hue = colors[colorIdx].h; const petalSize = 50 * s;
+            const hue = colors[colorIdx].h; 
+            const petalSize = 55 * s;
+            // 郁金香杯状结构：外层3瓣稍微张开
+            for (let i = 0; i < 3; i++) {
+                const angle = (360 / 3) * i - 90 + 10; // 稍微向外偏
+                this.drawTulipPetal(ctx, angle, petalSize, hue, 0.75, s, 'outer');
+            }
+            // 内层3瓣包裹花蕊
+            for (let i = 0; i < 3; i++) {
+                const angle = (360 / 3) * i - 90 - 15; // 稍微向内偏
+                this.drawTulipPetal(ctx, angle, petalSize * 0.85, hue + 10, 0.9, s, 'inner');
+            }
+            // 花蕊 - 郁金香花蕊较长
+            ctx.beginPath(); 
+            ctx.ellipse(0, -15 * s, 4 * s, 18 * s, 0, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${hue}, 80%, 65%, 0.85)`; ctx.fill();
+            // 雄蕊
             for (let i = 0; i < 3; i++) {
                 const angle = (360 / 3) * i - 90;
-                this.drawTulipPetal(ctx, angle, petalSize, hue, 0.8, s);
+                ctx.save(); ctx.translate(0, -20 * s); ctx.rotate(angle * Math.PI / 180);
+                ctx.beginPath(); ctx.ellipse(0, -8 * s, 3 * s, 10 * s, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#d4a020'; ctx.fill();
+                ctx.restore();
             }
-            for (let i = 0; i < 3; i++) {
-                const angle = (360 / 3) * i - 90 + 60;
-                this.drawTulipPetal(ctx, angle, petalSize * 0.9, hue + 15, 0.9, s);
-            }
-            ctx.beginPath(); ctx.ellipse(0, -10 * s, 8 * s, 15 * s, 0, 0, Math.PI * 2);
-            ctx.fillStyle = `hsla(${hue + 30}, 80%, 70%, 0.8)`; ctx.fill();
         }
-        drawTulipPetal(ctx, angle, size, hue, opacity, s) {
+        drawTulipPetal(ctx, angle, size, hue, opacity, s, type) {
             ctx.save(); ctx.rotate(angle * Math.PI / 180);
-            const petalGrad = ctx.createLinearGradient(0, 0, 0, -size * 1.2);
-            petalGrad.addColorStop(0, `hsla(${hue}, 70%, 55%, ${opacity})`);
-            petalGrad.addColorStop(0.5, `hsla(${hue + 10}, 65%, 60%, ${opacity})`);
-            petalGrad.addColorStop(1, `hsla(${hue + 20}, 60%, 65%, ${opacity * 0.7})`);
+            // 郁金香花瓣 - 杯状，从底部向顶部展开
+            const petalGrad = ctx.createLinearGradient(0, 0, 0, -size * 1.3);
+            petalGrad.addColorStop(0, `hsla(${hue}, 75%, 50%, ${opacity})`);
+            petalGrad.addColorStop(0.3, `hsla(${hue + 8}, 70%, 58%, ${opacity})`);
+            petalGrad.addColorStop(0.6, `hsla(${hue + 15}, 65%, 65%, ${opacity * 0.9})`);
+            petalGrad.addColorStop(1, `hsla(${hue + 25}, 60%, 70%, ${opacity * 0.75})`);
             ctx.beginPath(); ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(-size * 0.5, -size * 0.4, -size * 0.6, -size * 0.8, -size * 0.3, -size * 1.1);
-            ctx.quadraticCurveTo(0, -size * 1.2, size * 0.3, -size * 1.1);
-            ctx.bezierCurveTo(size * 0.6, -size * 0.8, size * 0.5, -size * 0.4, 0, 0);
+            // 郁金香特有形状：底部窄，向上逐渐变宽然后收尖
+            if (type === 'outer') {
+                ctx.bezierCurveTo(-size * 0.4, -size * 0.3, -size * 0.55, -size * 0.7, -size * 0.35, -size * 1.15);
+                ctx.bezierCurveTo(-size * 0.15, -size * 1.3, size * 0.15, -size * 1.3, size * 0.35, -size * 1.15);
+            } else {
+                ctx.bezierCurveTo(-size * 0.35, -size * 0.25, -size * 0.5, -size * 0.6, -size * 0.3, -size * 1.05);
+                ctx.bezierCurveTo(-size * 0.1, -size * 1.2, size * 0.1, -size * 1.2, size * 0.3, -size * 1.05);
+            }
+            ctx.bezierCurveTo(size * 0.55, -size * 0.7, size * 0.4, -size * 0.3, 0, 0);
             ctx.closePath(); ctx.fillStyle = petalGrad; ctx.fill();
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -size * 1);
-            ctx.strokeStyle = `hsla(${hue}, 50%, 50%, ${opacity * 0.3})`; ctx.lineWidth = 1 * s; ctx.stroke();
+            // 花瓣中脉
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -size * 1.1);
+            ctx.strokeStyle = `hsla(${hue}, 50%, 45%, ${opacity * 0.25})`; ctx.lineWidth = 1 * s; ctx.stroke();
             ctx.restore();
         }
     }
@@ -816,31 +873,66 @@
         drawFlower(ctx, s, breathe) {
             const centerY = this.y - 200 * s; const sway = Math.sin(this.time * 1.5) * 3 * s;
             ctx.save(); ctx.translate(this.x + sway, centerY);
-            const petalCount = 21; const petalSize = 30 * s * breathe;
-            for (let i = 0; i < petalCount; i++) {
-                const angle = (360 / petalCount) * i;
-                this.drawDaisyPetal(ctx, angle, petalSize, s);
+            // 雏菊：白色舌状花瓣，2-3圈
+            const outerPetals = 21; const innerPetals = 13;
+            const outerSize = 28 * s * breathe;
+            const innerSize = 22 * s * breathe;
+            // 外圈花瓣
+            for (let i = 0; i < outerPetals; i++) {
+                const angle = (360 / outerPetals) * i;
+                this.drawDaisyPetal(ctx, angle, outerSize, s, 'outer');
             }
-            const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 20 * s);
-            centerGrad.addColorStop(0, '#f0e020'); centerGrad.addColorStop(0.5, '#e4c010'); centerGrad.addColorStop(1, '#d4a000');
-            ctx.beginPath(); ctx.arc(0, 0, 20 * s, 0, Math.PI * 2); ctx.fillStyle = centerGrad; ctx.fill();
-            for (let ring = 0; ring < 3; ring++) {
-                const r = 5 + ring * 5 * s; const dots = 6 + ring * 4;
-                for (let i = 0; i < dots; i++) {
-                    const angle = (360 / dots) * i + ring * 10;
-                    ctx.beginPath();
-                    ctx.arc(Math.cos(angle * Math.PI / 180) * r, Math.sin(angle * Math.PI / 180) * r, 1.5 * s, 0, Math.PI * 2);
-                    ctx.fillStyle = '#b08000'; ctx.fill();
-                }
+            // 内圈花瓣（错开角度）
+            for (let i = 0; i < innerPetals; i++) {
+                const angle = (360 / innerPetals) * i + (360 / outerPetals) / 2;
+                this.drawDaisyPetal(ctx, angle, innerSize, s, 'inner');
             }
+            // 雏菊花心 - 黄色管状花
+            this.drawDaisyCenter(ctx, 0, 0, 18 * s, s);
             ctx.restore();
         }
-        drawDaisyPetal(ctx, angle, size, s) {
+        drawDaisyPetal(ctx, angle, size, s, type) {
             ctx.save(); ctx.rotate(angle * Math.PI / 180);
+            // 舌状花瓣：底部宽，向尖端逐渐变窄
             const petalGrad = ctx.createLinearGradient(0, 0, 0, -size);
-            petalGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)'); petalGrad.addColorStop(0.5, 'rgba(250, 250, 250, 0.9)'); petalGrad.addColorStop(1, 'rgba(240, 240, 240, 0.8)');
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.ellipse(0, -size * 0.6, size * 0.25, size * 0.6, 0, 0, Math.PI * 2);
-            ctx.fillStyle = petalGrad; ctx.fill(); ctx.restore();
+            if (type === 'outer') {
+                petalGrad.addColorStop(0, 'hsla(60, 10%, 98%, 0.98)');
+                petalGrad.addColorStop(0.4, 'hsla(0, 0%, 100%, 0.95)');
+                petalGrad.addColorStop(1, 'hsla(0, 0%, 95%, 0.85)');
+            } else {
+                petalGrad.addColorStop(0, 'hsla(60, 15%, 96%, 0.95)');
+                petalGrad.addColorStop(0.4, 'hsla(0, 0%, 98%, 0.9)');
+                petalGrad.addColorStop(1, 'hsla(0, 0%, 92%, 0.8)');
+            }
+            ctx.beginPath(); ctx.moveTo(-size * 0.18, 0);
+            // 花瓣形状：舌状，向下凹陷
+            ctx.bezierCurveTo(-size * 0.2, -size * 0.3, -size * 0.18, -size * 0.7, 0, -size);
+            ctx.bezierCurveTo(size * 0.18, -size * 0.7, size * 0.2, -size * 0.3, size * 0.18, 0);
+            ctx.closePath(); ctx.fillStyle = petalGrad; ctx.fill();
+            // 花瓣中脉
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -size * 0.8);
+            ctx.strokeStyle = 'hsla(60, 10%, 90%, 0.3)'; ctx.lineWidth = 0.5 * s; ctx.stroke();
+            ctx.restore();
+        }
+        drawDaisyCenter(ctx, x, y, size, s) {
+            // 黄色花盘
+            const centerGrad = ctx.createRadialGradient(x, y, 0, x, y, size);
+            centerGrad.addColorStop(0, '#f5d020');
+            centerGrad.addColorStop(0.4, '#e8b010');
+            centerGrad.addColorStop(0.8, '#d49808');
+            centerGrad.addColorStop(1, '#c08010');
+            ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fillStyle = centerGrad; ctx.fill();
+            // 管状花细节
+            for (let ring = 0; ring < 3; ring++) {
+                const r = 4 + ring * 4.5 * s; const dots = 8 + ring * 6;
+                for (let i = 0; i < dots; i++) {
+                    const angle = (360 / dots) * i + ring * 12;
+                    const px = x + Math.cos(angle * Math.PI / 180) * r;
+                    const py = y + Math.sin(angle * Math.PI / 180) * r;
+                    ctx.beginPath(); ctx.arc(px, py, 1.8 * s, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${45 - ring * 5}, ${90 - ring * 10}%, ${50 + ring * 8}%, 0.9)`; ctx.fill();
+                }
+            }
         }
     }
 
@@ -1028,42 +1120,69 @@
         drawDandelionHead(ctx, s) {
             const centerY = this.y - 200 * s; const sway = Math.sin(this.time * 1.5) * 2 * s;
             ctx.save(); ctx.translate(this.x + sway, centerY);
-            // 种子球
-            const ballGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 25 * s);
-            ballGrad.addColorStop(0, '#e8e0d0'); ballGrad.addColorStop(0.7, '#d0c8b8'); ballGrad.addColorStop(1, '#b0a898');
-            ctx.beginPath(); ctx.arc(0, 0, 25 * s, 0, Math.PI * 2); ctx.fillStyle = ballGrad; ctx.fill();
-            // 冠毛
-            for (let i = 0; i < 50; i++) {
-                const angle = (360 / 50) * i + Math.sin(this.time + i * 0.2) * 5;
-                const len = 20 + Math.random() * 10 * s;
+            // 蒲公英黄色头状花序 - 由许多舌状小花组成
+            // 外圈舌状花
+            for (let i = 0; i < 35; i++) {
+                const angle = (360 / 35) * i + Math.sin(this.time + i * 0.2) * 3;
+                const len = 22 + Math.sin(i * 0.4) * 4 * s;
+                const petalSize = 4 * s;
+                ctx.save(); ctx.rotate(angle * Math.PI / 180);
                 ctx.beginPath(); ctx.moveTo(0, 0);
-                ctx.lineTo(Math.cos(angle * Math.PI / 180) * len, Math.sin(angle * Math.PI / 180) * len);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${0.6 + Math.random() * 0.3})`;
-                ctx.lineWidth = 0.5 * s; ctx.stroke();
+                ctx.bezierCurveTo(-petalSize * 0.3, -len * 0.4, -petalSize * 0.25, -len * 0.8, 0, -len);
+                ctx.bezierCurveTo(petalSize * 0.25, -len * 0.8, petalSize * 0.3, -len * 0.4, 0, 0);
+                ctx.fillStyle = `hsla(${48 + i % 12}, 95%, 58%, 0.9)`; ctx.fill();
+                ctx.restore();
             }
+            // 内圈小花
+            for (let i = 0; i < 25; i++) {
+                const angle = (360 / 25) * i + 7 + Math.sin(this.time + i * 0.3) * 2;
+                const len = 14 + Math.sin(i * 0.5) * 3 * s;
+                const petalSize = 3 * s;
+                ctx.save(); ctx.rotate(angle * Math.PI / 180);
+                ctx.beginPath();
+                ctx.bezierCurveTo(-petalSize * 0.25, -len * 0.4, -petalSize * 0.2, -len * 0.8, 0, -len);
+                ctx.bezierCurveTo(petalSize * 0.2, -len * 0.8, petalSize * 0.25, -len * 0.4, 0, 0);
+                ctx.fillStyle = `hsla(${52 + i % 10}, 90%, 60%, 0.85)`; ctx.fill();
+                ctx.restore();
+            }
+            // 中心花盘
+            const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 8 * s);
+            centerGrad.addColorStop(0, '#e8a010');
+            centerGrad.addColorStop(1, '#c88010');
+            ctx.beginPath(); ctx.arc(0, 0, 8 * s, 0, Math.PI * 2); ctx.fillStyle = centerGrad; ctx.fill();
             ctx.restore();
         }
         drawFloatingSeeds(ctx, s) {
             ctx.save();
+            // 蒲公英种子 - 冠毛带着种子随风飘
             for (let i = 0; i < 15; i++) {
-                const px = this.x + (Math.sin(this.time * 0.3 + i * 1.5) * 150 + 50) * s;
-                const py = this.y - 200 * s - 50 * s - (this.time * 20 + i * 30) % 200 * s;
-                const alpha = 1 - ((this.time * 20 + i * 30) % 200) / 200;
+                const px = this.x + (Math.sin(this.time * 0.4 + i * 1.2) * 150 + 50) * s;
+                const py = this.y - 200 * s - 50 * s - (this.time * 25 + i * 35) % 250 * s;
+                const alpha = 1 - ((this.time * 25 + i * 35) % 250) / 250;
                 this.drawSingleSeed(ctx, px, py, s, alpha);
             }
             ctx.restore();
         }
         drawSingleSeed(ctx, x, y, s, alpha) {
-            ctx.save(); ctx.translate(x, y); ctx.rotate(this.time + x * 0.01);
-            ctx.beginPath(); ctx.ellipse(0, 0, 3 * s, 6 * s, 0, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(200, 180, 150, ${alpha})`; ctx.fill();
-            ctx.beginPath(); ctx.moveTo(0, -6 * s);
-            ctx.lineTo(0, -15 * s); ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-            ctx.lineWidth = 0.5 * s; ctx.stroke();
+            ctx.save(); ctx.translate(x, y); 
+            const windOffset = Math.sin(this.time * 0.5 + x * 0.02) * 3 * s;
+            ctx.rotate(this.time * 0.3 + x * 0.01);
+            // 种子（瘦果）
+            ctx.beginPath(); ctx.ellipse(windOffset, 0, 2.5 * s, 4.5 * s, 0, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(140, 120, 90, ${alpha * 0.8})`; ctx.fill();
+            // 冠毛（白色羽毛状）
+            ctx.beginPath(); ctx.moveTo(windOffset, -4.5 * s);
+            ctx.lineTo(windOffset, -12 * s); 
+            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.lineWidth = 0.8 * s; ctx.stroke();
+            // 冠毛羽毛
             for (let i = 0; i < 5; i++) {
-                const angle = -30 + i * 15;
-                ctx.beginPath(); ctx.moveTo(0, -8 * s);
-                ctx.lineTo(Math.cos(angle * Math.PI / 180) * 8 * s, -8 * s + Math.sin(angle * Math.PI / 180) * 8 * s);
+                const yOff = -5 * s - i * 1.5 * s;
+                const spread = (5 - i) * 0.8 * s;
+                ctx.beginPath(); ctx.moveTo(windOffset, yOff);
+                ctx.lineTo(windOffset - spread, yOff - 3 * s);
+                ctx.moveTo(windOffset, yOff);
+                ctx.lineTo(windOffset + spread, yOff - 3 * s);
                 ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.7})`; ctx.lineWidth = 0.3 * s; ctx.stroke();
             }
             ctx.restore();
