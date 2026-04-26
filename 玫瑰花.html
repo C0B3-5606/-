@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>真实花朵粒子系统 | 终极版</title>
+    <title>🌸 真实花朵粒子系统 | 终极豪华版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -12,15 +12,24 @@
             color: #e0e0e0;
             min-height: 100vh;
             overflow: hidden;
+            transition: background 1s ease;
+        }
+        body.day-mode {
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 50%, #F7DC6F 100%);
         }
         .container { display: flex; height: 100vh; padding: 10px; gap: 10px; }
 
         .flower-panel {
-            flex: 1; background: radial-gradient(ellipse at center bottom, #1a2a3a 0%, #0a0a1a 100%);
+            flex: 1; 
+            background: radial-gradient(ellipse at center bottom, #1a2a3a 0%, #0a0a1a 100%);
             border-radius: 16px;
             overflow: hidden; position: relative;
             box-shadow: 0 0 80px rgba(0, 100, 100, 0.15), inset 0 0 100px rgba(0, 50, 80, 0.1);
             border: 1px solid rgba(100, 150, 180, 0.2);
+            transition: background 1s ease;
+        }
+        body.day-mode .flower-panel {
+            background: radial-gradient(ellipse at center bottom, rgba(255,255,255,0.3) 0%, rgba(200,220,200,0.2) 100%);
         }
 
         .flower-header {
@@ -68,6 +77,11 @@
             border-radius: 10px; padding: 12px 15px; z-index: 5;
             font-size: 11px; color: #8090a0; min-width: 150px;
         }
+        body.day-mode .info-panel {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
         .info-panel h4 { color: #a0c0d0; margin-bottom: 8px; font-size: 12px; }
         .info-item { margin: 4px 0; display: flex; justify-content: space-between; }
         .info-value { color: #60a0c0; }
@@ -77,17 +91,62 @@
             background: rgba(10, 20, 30, 0.75); border-radius: 8px;
             padding: 8px 12px; font-size: 10px; color: #607080; z-index: 5;
         }
+        body.day-mode .tips {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+        }
         .tips kbd { background: rgba(50, 80, 100, 0.5); padding: 2px 6px; border-radius: 3px; margin: 0 2px; }
 
         .footer-stats {
             position: absolute; bottom: 75px; right: 15px;
             font-size: 11px; color: #506070; z-index: 5;
         }
+        body.day-mode .footer-stats { color: #333; }
         .footer-stats span { color: #60a0c0; margin: 0 5px; }
+
+        .audio-indicator {
+            position: absolute; top: 60px; right: 15px;
+            background: rgba(10, 20, 30, 0.85); border: 1px solid rgba(100, 180, 220, 0.2);
+            border-radius: 10px; padding: 12px 15px; z-index: 5;
+            font-size: 11px; color: #8090a0;
+        }
+        .audio-bar {
+            display: flex; gap: 3px; margin-top: 8px; height: 30px; align-items: flex-end;
+        }
+        .audio-bar div {
+            width: 6px; background: linear-gradient(to top, #ff6b9d, #60a0c0);
+            border-radius: 2px; transition: height 0.1s;
+        }
+
+        .settings-panel {
+            position: absolute; top: 60px; right: 15px;
+            background: rgba(10, 20, 30, 0.9); border: 1px solid rgba(100, 180, 220, 0.2);
+            border-radius: 10px; padding: 12px 15px; z-index: 5;
+            font-size: 11px; color: #8090a0; min-width: 180px;
+        }
+        body.day-mode .settings-panel {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+        .settings-panel h4 { color: #a0c0d0; margin-bottom: 10px; font-size: 12px; }
+        .setting-item { margin: 8px 0; }
+        .setting-item label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .setting-item input[type="range"] {
+            width: 100%; height: 4px; 
+            background: rgba(100, 180, 220, 0.3); 
+            border-radius: 2px; outline: none;
+            -webkit-appearance: none;
+        }
+        .setting-item input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px;
+            background: #60a0c0; border-radius: 50%; cursor: pointer;
+        }
 
         @media (max-width: 900px) {
             .container { flex-direction: column; }
             .flower-panel { height: 100vh; }
+            .info-panel, .settings-panel, .audio-indicator { display: none; }
         }
     </style>
 </head>
@@ -95,8 +154,8 @@
     <div class="container">
         <div class="flower-panel">
             <div class="flower-header">
-                <h2 class="flower-title">🌸 真实花朵粒子系统</h2>
-                <p class="flower-subtitle">完整花朵 · 花杆 · 叶片 · 粒子缠绕</p>
+                <h2 class="flower-title">🌸 真实花朵粒子系统 豪华版</h2>
+                <p class="flower-subtitle">完整花朵 · 花杆 · 叶片 · 粒子缠绕 · 萤火虫 · 流星</p>
             </div>
 
             <canvas id="flowerCanvas"></canvas>
@@ -105,15 +164,47 @@
                 <h4>🌺 当前花朵</h4>
                 <div class="info-item"><span>类型</span><span class="info-value" id="flowerName">玫瑰</span></div>
                 <div class="info-item"><span>粒子数</span><span class="info-value" id="particleCount">0</span></div>
+                <div class="info-item"><span>萤火虫</span><span class="info-value" id="fireflyCount">0</span></div>
                 <div class="info-item"><span>FPS</span><span class="info-value" id="fpsDisplay">60</span></div>
             </div>
 
+            <div class="settings-panel">
+                <h4>⚙️ 设置</h4>
+                <div class="setting-item">
+                    <label><span>粒子数量</span><span id="particleVal">50</span></label>
+                    <input type="range" id="particleSlider" min="10" max="200" value="50">
+                </div>
+                <div class="setting-item">
+                    <label><span>连线距离</span><span id="lineVal">80</span></label>
+                    <input type="range" id="lineSlider" min="30" max="150" value="80">
+                </div>
+                <div class="setting-item">
+                    <label><span>呼吸强度</span><span id="breatheVal">50%</span></label>
+                    <input type="range" id="breatheSlider" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <div class="audio-indicator">
+                <div>🎵 音频反应</div>
+                <div class="audio-bar" id="audioBars">
+                    <div style="height: 10px;"></div>
+                    <div style="height: 10px;"></div>
+                    <div style="height: 10px;"></div>
+                    <div style="height: 10px;"></div>
+                    <div style="height: 10px;"></div>
+                    <div style="height: 10px;"></div>
+                    <div style="height: 10px;"></div>
+                    <div style="height: 10px;"></div>
+                </div>
+                <div style="margin-top: 8px; cursor: pointer;" onclick="toggleAudio()" id="audioBtn">🎤 启用麦克风</div>
+            </div>
+
             <div class="tips">
-                <kbd>空格</kbd>暂停 <kbd>点击</kbd>花瓣爆发 <kbd>鼠标</kbd>吸引粒子
+                <kbd>空格</kbd>暂停 <kbd>点击</kbd>爆发 <kbd>M</kbd>麦克风 <kbd>D</kbd>白天模式 <kbd>S</kbd>截图
             </div>
 
             <div class="footer-stats">
-                <span id="petalCount">0</span> 花瓣 | <span id="leafCount">0</span> 叶片
+                <span id="petalCount">0</span> 花瓣 | <span id="leafCount">0</span> 叶片 | <span id="shootingStar">0</span> 流星
             </div>
 
             <div class="flower-controls">
@@ -124,7 +215,11 @@
                 <button class="control-btn" onclick="changeFlower('tulip')">🌷 郁金香</button>
                 <button class="control-btn" onclick="changeFlower('cherry')">🌺 樱花</button>
                 <button class="control-btn" onclick="changeFlower('daisy')">🌼 雏菊</button>
+                <button class="control-btn" onclick="changeFlower('lavender')">💜 薰衣草</button>
+                <button class="control-btn" onclick="changeFlower('peony')">🌺 牡丹</button>
+                <button class="control-btn" onclick="changeFlower('dandelion')">🌼 蒲公英</button>
                 <button class="control-btn" onclick="toggleAnimation()">⏸️ 暂停</button>
+                <button class="control-btn" onclick="toggleDayMode()">🌙 黑夜</button>
                 <button class="control-btn" onclick="resetSystem()">🔄 重置</button>
             </div>
         </div>
@@ -137,44 +232,27 @@
             this.x = x; this.y = y; this.scale = scale;
             this.time = 0;
             this.petalColors = [
-                { h: 350, s: 90, l: 50 },  // 深红
-                { h: 355, s: 85, l: 55 },  // 红
-                { h: 0, s: 80, l: 60 },    // 浅红
-                { h: 340, s: 75, l: 65 },  // 粉红
+                { h: 350, s: 90, l: 50 }, { h: 355, s: 85, l: 55 },
+                { h: 0, s: 80, l: 60 }, { h: 340, s: 75, l: 65 },
             ];
         }
-
         update(time) { this.time = time; }
-
         draw(ctx) {
             const s = this.scale;
-            const breathe = 1 + Math.sin(this.time * 2) * 0.03;
-            
-            // 花杆
+            const breathe = 1 + Math.sin(this.time * 2) * 0.03 * window.breatheIntensity;
             this.drawStem(ctx, s);
-            
-            // 叶子
             this.drawLeaves(ctx, s);
-            
-            // 花朵主体
             this.drawFlowerHead(ctx, s, breathe);
         }
-
         drawStem(ctx, s) {
             const stemHeight = 280 * s;
             const stemWidth = 8 * s;
             const sway = Math.sin(this.time * 1.5) * 3 * s;
-            
             ctx.save();
             ctx.translate(this.x, this.y);
-            
-            // 主茎 - 渐变绿色
             const stemGrad = ctx.createLinearGradient(0, 0, 0, stemHeight);
-            stemGrad.addColorStop(0, '#2d5a27');
-            stemGrad.addColorStop(0.3, '#3d7a37');
-            stemGrad.addColorStop(0.7, '#4d8a47');
-            stemGrad.addColorStop(1, '#3d6a37');
-            
+            stemGrad.addColorStop(0, '#2d5a27'); stemGrad.addColorStop(0.3, '#3d7a37');
+            stemGrad.addColorStop(0.7, '#4d8a47'); stemGrad.addColorStop(1, '#3d6a37');
             ctx.beginPath();
             ctx.moveTo(-stemWidth/2, 0);
             ctx.quadraticCurveTo(sway, stemHeight * 0.5, -stemWidth/3 + sway, stemHeight);
@@ -183,32 +261,23 @@
             ctx.closePath();
             ctx.fillStyle = stemGrad;
             ctx.fill();
-            
-            // 茎上的小刺
             for (let i = 0; i < 8; i++) {
                 const ty = 50 + i * 30;
                 const tx = sway * (ty / stemHeight);
                 ctx.beginPath();
                 ctx.moveTo(tx, ty);
                 ctx.lineTo(tx + (i % 2 === 0 ? 8 : -8) * s, ty - 5 * s);
-                ctx.strokeStyle = '#2d5a27';
-                ctx.lineWidth = 2 * s;
-                ctx.stroke();
+                ctx.strokeStyle = '#2d5a27'; ctx.lineWidth = 2 * s; ctx.stroke();
             }
-            
             ctx.restore();
         }
-
         drawLeaves(ctx, s) {
             const leafPositions = [
-                { y: 120, angle: -30, size: 0.8 },
-                { y: 160, angle: 40, size: 0.9 },
-                { y: 200, angle: -45, size: 1 },
-                { y: 240, angle: 35, size: 0.85 },
+                { y: 120, angle: -30, size: 0.8 }, { y: 160, angle: 40, size: 0.9 },
+                { y: 200, angle: -45, size: 1 }, { y: 240, angle: 35, size: 0.85 },
             ];
-            
             leafPositions.forEach((leaf, idx) => {
-                this.drawLeaf(ctx, 
+                this.drawLeaf(ctx,
                     this.x + Math.sin(this.time * 1.5) * 3 * s * (leaf.y / 280),
                     this.y + leaf.y * s,
                     leaf.angle + Math.sin(this.time * 2 + idx) * 3,
@@ -216,60 +285,33 @@
                 );
             });
         }
-
         drawLeaf(ctx, x, y, angle, size) {
             ctx.save();
             ctx.translate(x, y);
             ctx.rotate(angle * Math.PI / 180);
-            
             const leafGrad = ctx.createLinearGradient(0, 0, 50 * size, 0);
-            leafGrad.addColorStop(0, '#2d6a27');
-            leafGrad.addColorStop(0.5, '#3d8a37');
-            leafGrad.addColorStop(1, '#4d9a47');
-            
-            // 叶子形状
+            leafGrad.addColorStop(0, '#2d6a27'); leafGrad.addColorStop(0.5, '#3d8a37'); leafGrad.addColorStop(1, '#4d9a47');
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.bezierCurveTo(15 * size, -8 * size, 40 * size, -12 * size, 55 * size, 0);
             ctx.bezierCurveTo(40 * size, 12 * size, 15 * size, 8 * size, 0, 0);
-            ctx.fillStyle = leafGrad;
-            ctx.fill();
-            
-            // 叶脉
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(50 * size, 0);
-            ctx.strokeStyle = '#2d5a27';
-            ctx.lineWidth = 1 * size;
-            ctx.stroke();
-            
-            // 侧叶脉
+            ctx.fillStyle = leafGrad; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(50 * size, 0);
+            ctx.strokeStyle = '#2d5a27'; ctx.lineWidth = 1 * size; ctx.stroke();
             for (let i = 1; i <= 4; i++) {
-                ctx.beginPath();
-                ctx.moveTo(10 * i * size, 0);
-                ctx.lineTo(10 * i * size + 5 * size, -6 * size);
-                ctx.moveTo(10 * i * size, 0);
-                ctx.lineTo(10 * i * size + 5 * size, 6 * size);
-                ctx.strokeStyle = '#3d7a47';
-                ctx.lineWidth = 0.5 * size;
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(10 * i * size, 0); ctx.lineTo(10 * i * size + 5 * size, -6 * size);
+                ctx.moveTo(10 * i * size, 0); ctx.lineTo(10 * i * size + 5 * size, 6 * size);
+                ctx.strokeStyle = '#3d7a47'; ctx.lineWidth = 0.5 * size; ctx.stroke();
             }
-            
             ctx.restore();
         }
-
         drawFlowerHead(ctx, s, breathe) {
             const centerY = this.y - 280 * s;
             const baseSize = 45 * s * breathe;
             const sway = Math.sin(this.time * 1.5) * 3 * s;
-            
             ctx.save();
             ctx.translate(this.x + sway, centerY);
-            
-            // 萼片（花萼）
             this.drawSepals(ctx, 0, 0, baseSize, s);
-            
-            // 多层花瓣 - 从外到内
             const layers = [
                 { count: 5, size: 1.2, angle: 72, h: 350, opacity: 0.5 },
                 { count: 5, size: 1.0, angle: 36, h: 355, opacity: 0.6 },
@@ -278,7 +320,6 @@
                 { count: 8, size: 0.55, angle: 45, h: 345, opacity: 0.85 },
                 { count: 10, size: 0.4, angle: 36, h: 350, opacity: 0.9 },
             ];
-            
             layers.forEach((layer, idx) => {
                 for (let i = 0; i < layer.count; i++) {
                     const angle = (360 / layer.count) * i + layer.angle + Math.sin(this.time + idx) * 2;
@@ -287,93 +328,48 @@
                     this.drawRosePetal(ctx, angle, petalSize, hue, layer.opacity, s);
                 }
             });
-            
-            // 花蕊
             this.drawStamens(ctx, 0, 0, baseSize * 0.25, s);
-            
             ctx.restore();
         }
-
         drawSepals(ctx, x, y, size, s) {
             for (let i = 0; i < 5; i++) {
                 const angle = (360 / 5) * i - 90 + 36;
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(angle * Math.PI / 180);
-                
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
+                ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
+                ctx.beginPath(); ctx.moveTo(0, 0);
                 ctx.bezierCurveTo(-8 * s, -size * 0.3, -10 * s, -size * 0.8, 0, -size * 0.9);
                 ctx.bezierCurveTo(10 * s, -size * 0.8, 8 * s, -size * 0.3, 0, 0);
-                ctx.fillStyle = '#2d6a27';
-                ctx.fill();
-                
+                ctx.fillStyle = '#2d6a27'; ctx.fill();
                 ctx.restore();
             }
         }
-
         drawRosePetal(ctx, angle, size, hue, opacity, s) {
-            ctx.save();
-            ctx.rotate(angle * Math.PI / 180);
-            ctx.translate(0, size * 0.3);
-            
+            ctx.save(); ctx.rotate(angle * Math.PI / 180); ctx.translate(0, size * 0.3);
             const petalGrad = ctx.createRadialGradient(0, -size * 0.3, 0, 0, -size * 0.5, size);
             petalGrad.addColorStop(0, `hsla(${hue}, 85%, 55%, ${opacity})`);
             petalGrad.addColorStop(0.4, `hsla(${hue}, 80%, 50%, ${opacity * 0.8})`);
             petalGrad.addColorStop(0.7, `hsla(${hue - 10}, 75%, 45%, ${opacity * 0.6})`);
             petalGrad.addColorStop(1, `hsla(${hue - 15}, 70%, 40%, ${opacity * 0.3})`);
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
+            ctx.beginPath(); ctx.moveTo(0, 0);
             ctx.bezierCurveTo(-size * 0.6, -size * 0.2, -size * 0.7, -size * 0.7, 0, -size);
             ctx.bezierCurveTo(size * 0.7, -size * 0.7, size * 0.6, -size * 0.2, 0, 0);
-            ctx.fillStyle = petalGrad;
-            ctx.fill();
-            
-            // 花瓣纹理
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.quadraticCurveTo(-size * 0.2, -size * 0.5, 0, -size * 0.9);
+            ctx.fillStyle = petalGrad; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(-size * 0.2, -size * 0.5, 0, -size * 0.9);
             ctx.strokeStyle = `hsla(${hue}, 60%, 60%, ${opacity * 0.3})`;
-            ctx.lineWidth = 0.5 * s;
-            ctx.stroke();
-            
+            ctx.lineWidth = 0.5 * s; ctx.stroke();
             ctx.restore();
         }
-
         drawStamens(ctx, x, y, size, s) {
-            // 花蕊中心
             const centerGrad = ctx.createRadialGradient(x, y, 0, x, y, size);
-            centerGrad.addColorStop(0, '#f0d000');
-            centerGrad.addColorStop(0.5, '#d4a000');
-            centerGrad.addColorStop(1, '#a07000');
-            
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fillStyle = centerGrad;
-            ctx.fill();
-            
-            // 雄蕊
+            centerGrad.addColorStop(0, '#f0d000'); centerGrad.addColorStop(0.5, '#d4a000'); centerGrad.addColorStop(1, '#a07000');
+            ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fillStyle = centerGrad; ctx.fill();
             for (let i = 0; i < 12; i++) {
                 const angle = (360 / 12) * i;
                 const len = size * 0.8;
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(angle * Math.PI / 180);
-                
-                ctx.beginPath();
-                ctx.moveTo(0, size * 0.5);
-                ctx.lineTo(0, size * 0.5 + len);
-                ctx.strokeStyle = '#c0a000';
-                ctx.lineWidth = 1 * s;
-                ctx.stroke();
-                
-                // 花粉囊
-                ctx.beginPath();
-                ctx.ellipse(0, size * 0.5 + len + 3 * s, 2 * s, 3 * s, 0, 0, Math.PI * 2);
-                ctx.fillStyle = '#e0c020';
-                ctx.fill();
-                
+                ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
+                ctx.beginPath(); ctx.moveTo(0, size * 0.5); ctx.lineTo(0, size * 0.5 + len);
+                ctx.strokeStyle = '#c0a000'; ctx.lineWidth = 1 * s; ctx.stroke();
+                ctx.beginPath(); ctx.ellipse(0, size * 0.5 + len + 3 * s, 2 * s, 3 * s, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#e0c020'; ctx.fill();
                 ctx.restore();
             }
         }
@@ -382,116 +378,60 @@
     // ==================== 莲花类 ====================
     class Lotus {
         constructor(x, y, scale = 1) {
-            this.x = x; this.y = y; this.scale = scale;
-            this.time = 0;
+            this.x = x; this.y = y; this.scale = scale; this.time = 0;
         }
-
         update(time) { this.time = time; }
-
         draw(ctx) {
             const s = this.scale;
-            const breathe = 1 + Math.sin(this.time * 1.5) * 0.02;
+            const breathe = 1 + Math.sin(this.time * 1.5) * 0.02 * window.breatheIntensity;
             const bobbing = Math.sin(this.time * 0.8) * 3 * s;
-            
-            ctx.save();
-            ctx.translate(this.x, this.y + bobbing);
-            
-            // 水面波纹
+            ctx.save(); ctx.translate(this.x, this.y + bobbing);
             this.drawWater(ctx, s);
-            
-            // 浮叶
             this.drawFloatingLeaf(ctx, s);
-            
-            // 莲花
             this.drawLotusFlower(ctx, s, breathe);
-            
             ctx.restore();
         }
-
         drawWater(ctx, s) {
-            const waveOffset = this.time * 2;
             for (let ring = 0; ring < 4; ring++) {
                 const radius = (100 + ring * 50) * s;
                 const alpha = 0.15 - ring * 0.03;
-                
-                ctx.beginPath();
-                ctx.arc(0, 20 * s, radius, 0, Math.PI * 2);
-                ctx.strokeStyle = `rgba(100, 150, 200, ${alpha})`;
-                ctx.lineWidth = 1 * s;
-                ctx.stroke();
+                ctx.beginPath(); ctx.arc(0, 20 * s, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(100, 150, 200, ${alpha})`; ctx.lineWidth = 1 * s; ctx.stroke();
             }
         }
-
         drawFloatingLeaf(ctx, s) {
-            // 大浮叶
-            ctx.save();
-            ctx.translate(0, 30 * s);
-            
+            ctx.save(); ctx.translate(0, 30 * s);
             const leafGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 80 * s);
-            leafGrad.addColorStop(0, '#2d6a37');
-            leafGrad.addColorStop(0.7, '#3d8a47');
-            leafGrad.addColorStop(1, '#4d9a57');
-            
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 80 * s, 60 * s, 0, 0, Math.PI * 2);
-            ctx.fillStyle = leafGrad;
-            ctx.fill();
-            
-            // V字形缺口
+            leafGrad.addColorStop(0, '#2d6a37'); leafGrad.addColorStop(0.7, '#3d8a47'); leafGrad.addColorStop(1, '#4d9a57');
+            ctx.beginPath(); ctx.ellipse(0, 0, 80 * s, 60 * s, 0, 0, Math.PI * 2); ctx.fillStyle = leafGrad; ctx.fill();
             ctx.fillStyle = '#1a4a27';
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(-20 * s, -60 * s);
-            ctx.lineTo(0, -50 * s);
-            ctx.lineTo(20 * s, -60 * s);
-            ctx.closePath();
-            ctx.fill();
-            
-            // 叶脉
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-20 * s, -60 * s); ctx.lineTo(0, -50 * s); ctx.lineTo(20 * s, -60 * s); ctx.closePath(); ctx.fill();
             for (let i = 0; i < 12; i++) {
                 const angle = (360 / 12) * i;
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
+                ctx.beginPath(); ctx.moveTo(0, 0);
                 ctx.lineTo(Math.cos(angle * Math.PI / 180) * 70 * s, Math.sin(angle * Math.PI / 180) * 50 * s);
-                ctx.strokeStyle = '#2d6a37';
-                ctx.lineWidth = 1 * s;
-                ctx.stroke();
+                ctx.strokeStyle = '#2d6a37'; ctx.lineWidth = 1 * s; ctx.stroke();
             }
-            
             ctx.restore();
         }
-
         drawLotusFlower(ctx, s, breathe) {
-            const petalCount = 22;
-            const baseSize = 35 * s * breathe;
-            
-            // 外层大花瓣
+            const petalCount = 22; const baseSize = 35 * s * breathe;
             for (let i = 0; i < 8; i++) {
                 const angle = (360 / 8) * i - 90;
                 this.drawLotusPetal(ctx, angle, baseSize * 1.2, 340, 0.7, s, 'outer');
             }
-            
-            // 中层花瓣
             for (let i = 0; i < 7; i++) {
                 const angle = (360 / 7) * i - 90 + 25;
                 this.drawLotusPetal(ctx, angle, baseSize, 345, 0.8, s, 'middle');
             }
-            
-            // 内层花瓣
             for (let i = 0; i < 7; i++) {
                 const angle = (360 / 7) * i - 90;
                 this.drawLotusPetal(ctx, angle, baseSize * 0.7, 350, 0.9, s, 'inner');
             }
-            
-            // 莲蓬（花蕊）
             this.drawLotusCenter(ctx, 0, 0, baseSize * 0.4, s);
         }
-
         drawLotusPetal(ctx, angle, size, hue, opacity, s, type) {
-            ctx.save();
-            ctx.rotate(angle * Math.PI / 180);
-            ctx.translate(size * 0.2, 0);
-            
+            ctx.save(); ctx.rotate(angle * Math.PI / 180); ctx.translate(size * 0.2, 0);
             const petalGrad = ctx.createLinearGradient(0, 0, size * 1.5, 0);
             if (type === 'outer') {
                 petalGrad.addColorStop(0, `hsla(${hue}, 60%, 75%, ${opacity})`);
@@ -502,47 +442,24 @@
                 petalGrad.addColorStop(0.5, `hsla(${hue + 15}, 75%, 88%, ${opacity})`);
                 petalGrad.addColorStop(1, `hsla(${hue + 25}, 70%, 92%, ${opacity * 0.6})`);
             }
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
+            ctx.beginPath(); ctx.moveTo(0, 0);
             ctx.bezierCurveTo(size * 0.3, -size * 0.4, size * 0.8, -size * 0.3, size * 1.5, 0);
             ctx.bezierCurveTo(size * 0.8, size * 0.3, size * 0.3, size * 0.4, 0, 0);
-            ctx.fillStyle = petalGrad;
-            ctx.fill();
-            
-            // 花瓣纹理
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(size * 1.3, 0);
-            ctx.strokeStyle = `hsla(${hue}, 50%, 85%, ${opacity * 0.3})`;
-            ctx.lineWidth = 0.5 * s;
-            ctx.stroke();
-            
+            ctx.fillStyle = petalGrad; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(size * 1.3, 0);
+            ctx.strokeStyle = `hsla(${hue}, 50%, 85%, ${opacity * 0.3})`; ctx.lineWidth = 0.5 * s; ctx.stroke();
             ctx.restore();
         }
-
         drawLotusCenter(ctx, x, y, size, s) {
-            // 莲蓬主体
             const centerGrad = ctx.createRadialGradient(x, y, 0, x, y, size);
-            centerGrad.addColorStop(0, '#f0e060');
-            centerGrad.addColorStop(0.5, '#d4c040');
-            centerGrad.addColorStop(1, '#a08020');
-            
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fillStyle = centerGrad;
-            ctx.fill();
-            
-            // 莲子
+            centerGrad.addColorStop(0, '#f0e060'); centerGrad.addColorStop(0.5, '#d4c040'); centerGrad.addColorStop(1, '#a08020');
+            ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fillStyle = centerGrad; ctx.fill();
             for (let row = 0; row < 3; row++) {
-                const count = 5 - row;
-                const yOff = (row - 1) * size * 0.35;
+                const count = 5 - row; const yOff = (row - 1) * size * 0.35;
                 for (let i = 0; i < count; i++) {
                     const xOff = (i - (count - 1) / 2) * size * 0.35;
-                    ctx.beginPath();
-                    ctx.ellipse(x + xOff, y + yOff, size * 0.15, size * 0.2, 0, 0, Math.PI * 2);
-                    ctx.fillStyle = '#2d5a27';
-                    ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(x + xOff, y + yOff, size * 0.15, size * 0.2, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = '#2d5a27'; ctx.fill();
                 }
             }
         }
@@ -550,181 +467,87 @@
 
     // ==================== 向日葵类 ====================
     class Sunflower {
-        constructor(x, y, scale = 1) {
-            this.x = x; this.y = y; this.scale = scale;
-            this.time = 0;
-        }
-
+        constructor(x, y, scale = 1) { this.x = x; this.y = y; this.scale = scale; this.time = 0; }
         update(time) { this.time = time; }
-
         draw(ctx) {
             const s = this.scale;
-            const breathe = 1 + Math.sin(this.time * 2) * 0.02;
-            
-            // 花杆
-            this.drawStem(ctx, s);
-            
-            // 大叶子
-            this.drawLargeLeaves(ctx, s);
-            
-            // 花朵
+            const breathe = 1 + Math.sin(this.time * 2) * 0.02 * window.breatheIntensity;
+            this.drawStem(ctx, s); this.drawLargeLeaves(ctx, s);
             this.drawFlower(ctx, s, breathe);
         }
-
         drawStem(ctx, s) {
-            const height = 320 * s;
-            const sway = Math.sin(this.time * 1.2) * 4 * s;
-            
+            const height = 320 * s; const sway = Math.sin(this.time * 1.2) * 4 * s;
             const stemGrad = ctx.createLinearGradient(0, 0, 0, height);
-            stemGrad.addColorStop(0, '#2d6a27');
-            stemGrad.addColorStop(0.5, '#4d8a37');
-            stemGrad.addColorStop(1, '#3d7a27');
-            
+            stemGrad.addColorStop(0, '#2d6a27'); stemGrad.addColorStop(0.5, '#4d8a37'); stemGrad.addColorStop(1, '#3d7a27');
             ctx.beginPath();
             ctx.moveTo(this.x - 6 * s, this.y);
             ctx.quadraticCurveTo(this.x + sway, this.y + height * 0.5, this.x - 4 * s + sway, this.y + height);
             ctx.lineTo(this.x + 4 * s + sway, this.y + height);
             ctx.quadraticCurveTo(this.x + sway, this.y + height * 0.5, this.x + 6 * s, this.y);
-            ctx.closePath();
-            ctx.fillStyle = stemGrad;
-            ctx.fill();
-            
-            // 小叶片
+            ctx.closePath(); ctx.fillStyle = stemGrad; ctx.fill();
             for (let i = 0; i < 3; i++) {
-                const ty = 150 + i * 60;
-                const tx = sway * (ty / height);
-                const dir = i % 2 === 0 ? 1 : -1;
+                const ty = 150 + i * 60; const tx = sway * (ty / height); const dir = i % 2 === 0 ? 1 : -1;
                 this.drawSmallLeaf(ctx, this.x + tx, this.y + ty, dir * 50, dir * 0.8 * s);
             }
         }
-
         drawLargeLeaves(ctx, s) {
-            const leaves = [
-                { y: 140, angle: -50, size: 1.2 },
-                { y: 180, angle: 55, size: 1.1 },
-                { y: 220, angle: -45, size: 1 },
-            ];
-            
+            const leaves = [{ y: 140, angle: -50, size: 1.2 }, { y: 180, angle: 55, size: 1.1 }, { y: 220, angle: -45, size: 1 }];
             leaves.forEach((leaf, idx) => {
                 const sway = Math.sin(this.time * 1.2) * 4 * s * (leaf.y / 320);
                 this.drawSunflowerLeaf(ctx, this.x + sway, this.y + leaf.y * s, leaf.angle, leaf.size * s);
             });
         }
-
         drawSmallLeaf(ctx, x, y, xOff, s) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(xOff > 0 ? 0.3 : -0.3);
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
+            ctx.save(); ctx.translate(x, y); ctx.rotate(xOff > 0 ? 0.3 : -0.3);
+            ctx.beginPath(); ctx.moveTo(0, 0);
             ctx.ellipse(xOff * 0.5, 0, Math.abs(xOff) * 0.6, 15 * s, 0, 0, Math.PI * 2);
-            ctx.fillStyle = '#3d7a37';
-            ctx.fill();
-            
-            ctx.restore();
+            ctx.fillStyle = '#3d7a37'; ctx.fill(); ctx.restore();
         }
-
         drawSunflowerLeaf(ctx, x, y, angle, size) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle * Math.PI / 180);
-            
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
             const leafGrad = ctx.createLinearGradient(0, 0, 80 * size, 0);
-            leafGrad.addColorStop(0, '#2d6a27');
-            leafGrad.addColorStop(0.5, '#4d8a47');
-            leafGrad.addColorStop(1, '#3d7a37');
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
+            leafGrad.addColorStop(0, '#2d6a27'); leafGrad.addColorStop(0.5, '#4d8a47'); leafGrad.addColorStop(1, '#3d7a37');
+            ctx.beginPath(); ctx.moveTo(0, 0);
             ctx.bezierCurveTo(20 * size, -20 * size, 60 * size, -25 * size, 80 * size, 0);
             ctx.bezierCurveTo(60 * size, 25 * size, 20 * size, 20 * size, 0, 0);
-            ctx.fillStyle = leafGrad;
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(70 * size, 0);
-            ctx.strokeStyle = '#2d5a27';
-            ctx.lineWidth = 1.5 * size;
-            ctx.stroke();
-            
-            ctx.restore();
+            ctx.fillStyle = leafGrad; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(70 * size, 0);
+            ctx.strokeStyle = '#2d5a27'; ctx.lineWidth = 1.5 * size; ctx.stroke(); ctx.restore();
         }
-
         drawFlower(ctx, s, breathe) {
-            const centerY = this.y - 320 * s;
-            const sway = Math.sin(this.time * 1.2) * 4 * s;
-            
-            ctx.save();
-            ctx.translate(this.x + sway, centerY);
-            
-            const petalCount = 34;
-            const petalSize = 40 * s * breathe;
-            
-            // 花瓣层
+            const centerY = this.y - 320 * s; const sway = Math.sin(this.time * 1.2) * 4 * s;
+            ctx.save(); ctx.translate(this.x + sway, centerY);
+            const petalCount = 34; const petalSize = 40 * s * breathe;
             for (let i = 0; i < petalCount; i++) {
                 const angle = (360 / petalCount) * i;
                 this.drawSunflowerPetal(ctx, angle, petalSize, s);
             }
-            
-            // 花盘
             this.drawCenter(ctx, 0, 0, 50 * s * breathe, s);
-            
             ctx.restore();
         }
-
         drawSunflowerPetal(ctx, angle, size, s) {
-            ctx.save();
-            ctx.rotate(angle * Math.PI / 180);
-            ctx.translate(size * 0.3, 0);
-            
+            ctx.save(); ctx.rotate(angle * Math.PI / 180); ctx.translate(size * 0.3, 0);
             const petalGrad = ctx.createLinearGradient(0, 0, size * 1.2, 0);
-            petalGrad.addColorStop(0, '#d4a020');
-            petalGrad.addColorStop(0.5, '#f0c030');
-            petalGrad.addColorStop(1, '#ffe050');
-            
-            ctx.beginPath();
-            ctx.moveTo(0, -8 * s);
+            petalGrad.addColorStop(0, '#d4a020'); petalGrad.addColorStop(0.5, '#f0c030'); petalGrad.addColorStop(1, '#ffe050');
+            ctx.beginPath(); ctx.moveTo(0, -8 * s);
             ctx.bezierCurveTo(size * 0.3, -10 * s, size * 0.8, -8 * s, size * 1.2, 0);
             ctx.bezierCurveTo(size * 0.8, 8 * s, size * 0.3, 10 * s, 0, 8 * s);
-            ctx.closePath();
-            ctx.fillStyle = petalGrad;
-            ctx.fill();
-            
-            // 花瓣尖端深色
-            ctx.beginPath();
-            ctx.ellipse(size * 1.15, 0, 4 * s, 6 * s, 0, 0, Math.PI * 2);
-            ctx.fillStyle = '#c08010';
-            ctx.fill();
-            
-            ctx.restore();
+            ctx.closePath(); ctx.fillStyle = petalGrad; ctx.fill();
+            ctx.beginPath(); ctx.ellipse(size * 1.15, 0, 4 * s, 6 * s, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#c08010'; ctx.fill(); ctx.restore();
         }
-
         drawCenter(ctx, x, y, size, s) {
-            // 深褐色花盘
             const centerGrad = ctx.createRadialGradient(x, y, 0, x, y, size);
-            centerGrad.addColorStop(0, '#4a3010');
-            centerGrad.addColorStop(0.7, '#3a2808');
-            centerGrad.addColorStop(1, '#2a1805');
-            
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fillStyle = centerGrad;
-            ctx.fill();
-            
-            // 花盘纹理（螺旋）
+            centerGrad.addColorStop(0, '#4a3010'); centerGrad.addColorStop(0.7, '#3a2808'); centerGrad.addColorStop(1, '#2a1805');
+            ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fillStyle = centerGrad; ctx.fill();
             for (let ring = 0; ring < 5; ring++) {
-                const r = size * (0.2 + ring * 0.15);
-                const dots = 8 + ring * 6;
+                const r = size * (0.2 + ring * 0.15); const dots = 8 + ring * 6;
                 for (let i = 0; i < dots; i++) {
                     const angle = (360 / dots) * i + ring * 15;
                     const px = x + Math.cos(angle * Math.PI / 180) * r;
                     const py = y + Math.sin(angle * Math.PI / 180) * r;
-                    ctx.beginPath();
-                    ctx.arc(px, py, 2 * s, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(${60 + ring * 10}, ${40 + ring * 5}, ${10 + ring * 3}, 0.8)`;
-                    ctx.fill();
+                    ctx.beginPath(); ctx.arc(px, py, 2 * s, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${60 + ring * 10}, ${40 + ring * 5}, ${10 + ring * 3}, 0.8)`; ctx.fill();
                 }
             }
         }
@@ -732,488 +555,225 @@
 
     // ==================== 百合类 ====================
     class Lily {
-        constructor(x, y, scale = 1) {
-            this.x = x; this.y = y; this.scale = scale;
-            this.time = 0;
-        }
-
+        constructor(x, y, scale = 1) { this.x = x; this.y = y; this.scale = scale; this.time = 0; }
         update(time) { this.time = time; }
-
         draw(ctx) {
             const s = this.scale;
-            const breathe = 1 + Math.sin(this.time * 1.5) * 0.03;
+            const breathe = 1 + Math.sin(this.time * 1.5) * 0.03 * window.breatheIntensity;
             const sway = Math.sin(this.time * 1.2) * 3 * s;
-            
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            
-            // 花杆
-            this.drawStem(ctx, s, sway);
-            
-            // 叶子
-            this.drawLeaves(ctx, s, sway);
-            
-            // 花朵
-            ctx.translate(sway, -280 * s);
-            this.drawLilyFlower(ctx, s, breathe);
-            
+            ctx.save(); ctx.translate(this.x, this.y);
+            this.drawStem(ctx, s, sway); this.drawLeaves(ctx, s, sway);
+            ctx.translate(sway, -280 * s); this.drawLilyFlower(ctx, s, breathe);
             ctx.restore();
         }
-
         drawStem(ctx, s, sway) {
             const height = 280 * s;
             const stemGrad = ctx.createLinearGradient(0, 0, 0, height);
-            stemGrad.addColorStop(0, '#2d6a27');
-            stemGrad.addColorStop(0.5, '#4d8a37');
-            stemGrad.addColorStop(1, '#3d7a27');
-            
+            stemGrad.addColorStop(0, '#2d6a27'); stemGrad.addColorStop(0.5, '#4d8a37'); stemGrad.addColorStop(1, '#3d7a27');
             ctx.beginPath();
-            ctx.moveTo(-5 * s, 0);
-            ctx.quadraticCurveTo(sway * 0.5, height * 0.5, -3 * s + sway, height);
-            ctx.lineTo(3 * s + sway, height);
-            ctx.quadraticCurveTo(sway * 0.5, height * 0.5, 5 * s, 0);
-            ctx.closePath();
-            ctx.fillStyle = stemGrad;
-            ctx.fill();
+            ctx.moveTo(-5 * s, 0); ctx.quadraticCurveTo(sway * 0.5, height * 0.5, -3 * s + sway, height);
+            ctx.lineTo(3 * s + sway, height); ctx.quadraticCurveTo(sway * 0.5, height * 0.5, 5 * s, 0);
+            ctx.closePath(); ctx.fillStyle = stemGrad; ctx.fill();
         }
-
         drawLeaves(ctx, s, sway) {
-            const leaves = [
-                { y: 80, angle: -40, size: 0.9 },
-                { y: 130, angle: 45, size: 1 },
-                { y: 180, angle: -50, size: 0.85 },
-                { y: 230, angle: 40, size: 0.8 },
-            ];
-            
+            const leaves = [{ y: 80, angle: -40, size: 0.9 }, { y: 130, angle: 45, size: 1 }, { y: 180, angle: -50, size: 0.85 }, { y: 230, angle: 40, size: 0.8 }];
             leaves.forEach((leaf, idx) => {
-                const ty = leaf.y * s;
-                const tx = sway * (ty / (280 * s));
+                const ty = leaf.y * s; const tx = sway * (ty / (280 * s));
                 this.drawLilyLeaf(ctx, this.x + tx, this.y + ty, leaf.angle, leaf.size * s);
             });
         }
-
         drawLilyLeaf(ctx, x, y, angle, size) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle * Math.PI / 180);
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
+            ctx.beginPath(); ctx.moveTo(0, 0);
             ctx.ellipse(30 * size, 0, 35 * size, 10 * size, 0, 0, Math.PI * 2);
-            ctx.fillStyle = '#3d7a37';
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(25 * size, 0);
-            ctx.strokeStyle = '#2d5a27';
-            ctx.lineWidth = 1 * size;
-            ctx.stroke();
-            
-            ctx.restore();
+            ctx.fillStyle = '#3d7a37'; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(25 * size, 0);
+            ctx.strokeStyle = '#2d5a27'; ctx.lineWidth = 1 * size; ctx.stroke(); ctx.restore();
         }
-
         drawLilyFlower(ctx, s, breathe) {
-            const petalCount = 6;
-            const petalSize = 60 * s * breathe;
-            
-            // 花瓣 - 百合花向外翻
+            const petalCount = 6; const petalSize = 60 * s * breathe;
             for (let i = 0; i < petalCount; i++) {
                 const angle = (360 / petalCount) * i - 90;
                 const bendAngle = 30 + Math.sin(this.time + i) * 5;
                 this.drawLilyPetal(ctx, angle, petalSize, bendAngle, s, i);
             }
-            
-            // 花蕊
             this.drawLilyStamens(ctx, 0, 0, s);
-            
-            // 花柱
-            ctx.beginPath();
-            ctx.moveTo(0, 10 * s);
-            ctx.lineTo(0, 25 * s);
-            ctx.strokeStyle = '#3d8a37';
-            ctx.lineWidth = 3 * s;
-            ctx.stroke();
-            
-            // 柱头三裂
+            ctx.beginPath(); ctx.moveTo(0, 10 * s); ctx.lineTo(0, 25 * s);
+            ctx.strokeStyle = '#3d8a37'; ctx.lineWidth = 3 * s; ctx.stroke();
             for (let i = 0; i < 3; i++) {
                 const angle = (360 / 3) * i - 90;
-                ctx.save();
-                ctx.translate(0, 25 * s);
-                ctx.rotate(angle * Math.PI / 180);
-                ctx.beginPath();
-                ctx.ellipse(8 * s, 0, 6 * s, 10 * s, 0, 0, Math.PI * 2);
-                ctx.fillStyle = '#c07037';
-                ctx.fill();
-                ctx.restore();
+                ctx.save(); ctx.translate(0, 25 * s); ctx.rotate(angle * Math.PI / 180);
+                ctx.beginPath(); ctx.ellipse(8 * s, 0, 6 * s, 10 * s, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#c07037'; ctx.fill(); ctx.restore();
             }
         }
-
         drawLilyPetal(ctx, angle, size, bendAngle, s, idx) {
-            ctx.save();
-            ctx.rotate(angle * Math.PI / 180);
-            
+            ctx.save(); ctx.rotate(angle * Math.PI / 180);
             const petalGrad = ctx.createLinearGradient(0, 0, size * 1.5, -size * 0.5);
             const hue = idx % 2 === 0 ? 330 : 320;
             petalGrad.addColorStop(0, `hsla(${hue}, 40%, 95%, 0.95)`);
             petalGrad.addColorStop(0.5, `hsla(${hue + 10}, 35%, 90%, 0.9)`);
             petalGrad.addColorStop(1, `hsla(${hue + 15}, 50%, 85%, 0.7)`);
-            
-            // 向外弯曲的花瓣
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(
-                size * 0.3, -size * 0.2,
-                size * 0.8, -size * 0.6,
-                size * 1.2, -size * 0.8 + bendAngle * 0.3
-            );
-            ctx.bezierCurveTo(
-                size * 0.8, -size * 0.3,
-                size * 0.3, -size * 0.1,
-                0, 0
-            );
-            ctx.fillStyle = petalGrad;
-            ctx.fill();
-            
-            // 花瓣斑点
+            ctx.beginPath(); ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(size * 0.3, -size * 0.2, size * 0.8, -size * 0.6, size * 1.2, -size * 0.8 + bendAngle * 0.3);
+            ctx.bezierCurveTo(size * 0.8, -size * 0.3, size * 0.3, -size * 0.1, 0, 0);
+            ctx.fillStyle = petalGrad; ctx.fill();
             for (let j = 0; j < 5; j++) {
-                const spotX = size * (0.3 + j * 0.15);
-                const spotY = -size * (0.1 + j * 0.08);
-                ctx.beginPath();
-                ctx.ellipse(spotX, spotY, 2 * s, 1.5 * s, 0, 0, Math.PI * 2);
-                ctx.fillStyle = `hsla(${hue + 30}, 60%, 40%, 0.4)`;
-                ctx.fill();
+                const spotX = size * (0.3 + j * 0.15); const spotY = -size * (0.1 + j * 0.08);
+                ctx.beginPath(); ctx.ellipse(spotX, spotY, 2 * s, 1.5 * s, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${hue + 30}, 60%, 40%, 0.4)`; ctx.fill();
             }
-            
             ctx.restore();
         }
-
         drawLilyStamens(ctx, x, y, s) {
             for (let i = 0; i < 6; i++) {
-                const angle = (360 / 6) * i;
-                const len = 25 * s;
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(angle * Math.PI / 180);
-                
-                ctx.beginPath();
-                ctx.moveTo(0, 5 * s);
-                ctx.lineTo(0, 5 * s + len);
-                ctx.strokeStyle = '#8a7037';
-                ctx.lineWidth = 1.5 * s;
-                ctx.stroke();
-                
-                // 花药
-                ctx.beginPath();
-                ctx.ellipse(0, 5 * s + len + 4 * s, 4 * s, 6 * s, 0, 0, Math.PI * 2);
-                ctx.fillStyle = '#d4a020';
-                ctx.fill();
-                
-                ctx.restore();
+                const angle = (360 / 6) * i; const len = 25 * s;
+                ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
+                ctx.beginPath(); ctx.moveTo(0, 5 * s); ctx.lineTo(0, 5 * s + len);
+                ctx.strokeStyle = '#8a7037'; ctx.lineWidth = 1.5 * s; ctx.stroke();
+                ctx.beginPath(); ctx.ellipse(0, 5 * s + len + 4 * s, 4 * s, 6 * s, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#d4a020'; ctx.fill(); ctx.restore();
             }
         }
     }
 
     // ==================== 郁金香类 ====================
     class Tulip {
-        constructor(x, y, scale = 1) {
-            this.x = x; this.y = y; this.scale = scale;
-            this.time = 0;
-        }
-
+        constructor(x, y, scale = 1) { this.x = x; this.y = y; this.scale = scale; this.time = 0; }
         update(time) { this.time = time; }
-
         draw(ctx) {
-            const s = this.scale;
-            const sway = Math.sin(this.time * 1.3) * 4 * s;
-            
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            
-            // 花杆
-            this.drawStem(ctx, s, sway);
-            
-            // 叶子
-            this.drawLeaves(ctx, s, sway);
-            
-            // 花朵
-            ctx.translate(sway, -260 * s);
-            this.drawTulipFlower(ctx, s);
-            
+            const s = this.scale; const sway = Math.sin(this.time * 1.3) * 4 * s;
+            ctx.save(); ctx.translate(this.x, this.y);
+            this.drawStem(ctx, s, sway); this.drawLeaves(ctx, s, sway);
+            ctx.translate(sway, -260 * s); this.drawTulipFlower(ctx, s);
             ctx.restore();
         }
-
         drawStem(ctx, s, sway) {
             const height = 260 * s;
             const stemGrad = ctx.createLinearGradient(0, 0, 0, height);
-            stemGrad.addColorStop(0, '#2d6a27');
-            stemGrad.addColorStop(0.5, '#4d8a37');
-            stemGrad.addColorStop(1, '#3d7a27');
-            
+            stemGrad.addColorStop(0, '#2d6a27'); stemGrad.addColorStop(0.5, '#4d8a37'); stemGrad.addColorStop(1, '#3d7a27');
             ctx.beginPath();
-            ctx.moveTo(-6 * s, 0);
-            ctx.quadraticCurveTo(sway * 0.5, height * 0.5, -4 * s + sway, height);
-            ctx.lineTo(4 * s + sway, height);
-            ctx.quadraticCurveTo(sway * 0.5, height * 0.5, 6 * s, 0);
-            ctx.closePath();
-            ctx.fillStyle = stemGrad;
-            ctx.fill();
+            ctx.moveTo(-6 * s, 0); ctx.quadraticCurveTo(sway * 0.5, height * 0.5, -4 * s + sway, height);
+            ctx.lineTo(4 * s + sway, height); ctx.quadraticCurveTo(sway * 0.5, height * 0.5, 6 * s, 0);
+            ctx.closePath(); ctx.fillStyle = stemGrad; ctx.fill();
         }
-
         drawLeaves(ctx, s, sway) {
-            // 大叶子包裹
-            const leaves = [
-                { y: 60, angle: -20, width: 1.3, height: 1 },
-                { y: 100, angle: 25, width: 1.2, height: 0.9 },
-            ];
-            
+            const leaves = [{ y: 60, angle: -20, width: 1.3, height: 1 }, { y: 100, angle: 25, width: 1.2, height: 0.9 }];
             leaves.forEach((leaf, idx) => {
-                const ty = leaf.y * s;
-                const tx = sway * (ty / (260 * s));
+                const ty = leaf.y * s; const tx = sway * (ty / (260 * s));
                 this.drawTulipLeaf(ctx, this.x + tx, this.y + ty, leaf.angle, leaf.width * s, leaf.height * s);
             });
         }
-
         drawTulipLeaf(ctx, x, y, angle, width, height) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle * Math.PI / 180);
-            
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
             const leafGrad = ctx.createLinearGradient(0, 0, 0, 100 * height);
-            leafGrad.addColorStop(0, '#2d6a27');
-            leafGrad.addColorStop(0.5, '#4d8a47');
-            leafGrad.addColorStop(1, '#3d7a37');
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
+            leafGrad.addColorStop(0, '#2d6a27'); leafGrad.addColorStop(0.5, '#4d8a47'); leafGrad.addColorStop(1, '#3d7a37');
+            ctx.beginPath(); ctx.moveTo(0, 0);
             ctx.bezierCurveTo(-width * 0.3, 30 * height, -width * 0.5, 60 * height, -width * 0.2, 100 * height);
             ctx.lineTo(width * 0.2, 100 * height);
             ctx.bezierCurveTo(width * 0.5, 60 * height, width * 0.3, 30 * height, 0, 0);
-            ctx.closePath();
-            ctx.fillStyle = leafGrad;
-            ctx.fill();
-            
-            ctx.restore();
+            ctx.closePath(); ctx.fillStyle = leafGrad; ctx.fill(); ctx.restore();
         }
-
         drawTulipFlower(ctx, s) {
-            const colors = [
-                { h: 350, name: '红' },
-                { h: 45, name: '黄' },
-                { h: 280, name: '紫' },
-                { h: 0, name: '白' },
-                { h: 330, name: '粉' },
-            ];
+            const colors = [{ h: 350, name: '红' }, { h: 45, name: '黄' }, { h: 280, name: '紫' }, { h: 0, name: '白' }, { h: 330, name: '粉' }];
             const colorIdx = Math.floor((Math.sin(this.time * 0.5) + 1) * 2.5) % 5;
-            const hue = colors[colorIdx].h;
-            
-            const petalSize = 50 * s;
-            
-            // 外层3片
+            const hue = colors[colorIdx].h; const petalSize = 50 * s;
             for (let i = 0; i < 3; i++) {
                 const angle = (360 / 3) * i - 90;
                 this.drawTulipPetal(ctx, angle, petalSize, hue, 0.8, s);
             }
-            
-            // 内层3片
             for (let i = 0; i < 3; i++) {
                 const angle = (360 / 3) * i - 90 + 60;
                 this.drawTulipPetal(ctx, angle, petalSize * 0.9, hue + 15, 0.9, s);
             }
-            
-            // 花蕊
-            ctx.beginPath();
-            ctx.ellipse(0, -10 * s, 8 * s, 15 * s, 0, 0, Math.PI * 2);
-            ctx.fillStyle = `hsla(${hue + 30}, 80%, 70%, 0.8)`;
-            ctx.fill();
+            ctx.beginPath(); ctx.ellipse(0, -10 * s, 8 * s, 15 * s, 0, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${hue + 30}, 80%, 70%, 0.8)`; ctx.fill();
         }
-
         drawTulipPetal(ctx, angle, size, hue, opacity, s) {
-            ctx.save();
-            ctx.rotate(angle * Math.PI / 180);
-            
+            ctx.save(); ctx.rotate(angle * Math.PI / 180);
             const petalGrad = ctx.createLinearGradient(0, 0, 0, -size * 1.2);
             petalGrad.addColorStop(0, `hsla(${hue}, 70%, 55%, ${opacity})`);
             petalGrad.addColorStop(0.5, `hsla(${hue + 10}, 65%, 60%, ${opacity})`);
             petalGrad.addColorStop(1, `hsla(${hue + 20}, 60%, 65%, ${opacity * 0.7})`);
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
+            ctx.beginPath(); ctx.moveTo(0, 0);
             ctx.bezierCurveTo(-size * 0.5, -size * 0.4, -size * 0.6, -size * 0.8, -size * 0.3, -size * 1.1);
             ctx.quadraticCurveTo(0, -size * 1.2, size * 0.3, -size * 1.1);
             ctx.bezierCurveTo(size * 0.6, -size * 0.8, size * 0.5, -size * 0.4, 0, 0);
-            ctx.closePath();
-            ctx.fillStyle = petalGrad;
-            ctx.fill();
-            
-            // 花瓣中线
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, -size * 1);
-            ctx.strokeStyle = `hsla(${hue}, 50%, 50%, ${opacity * 0.3})`;
-            ctx.lineWidth = 1 * s;
-            ctx.stroke();
-            
+            ctx.closePath(); ctx.fillStyle = petalGrad; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -size * 1);
+            ctx.strokeStyle = `hsla(${hue}, 50%, 50%, ${opacity * 0.3})`; ctx.lineWidth = 1 * s; ctx.stroke();
             ctx.restore();
         }
     }
 
     // ==================== 樱花类 ====================
     class CherryBlossom {
-        constructor(x, y, scale = 1) {
-            this.x = x; this.y = y; this.scale = scale;
-            this.time = 0;
-        }
-
+        constructor(x, y, scale = 1) { this.x = x; this.y = y; this.scale = scale; this.time = 0; }
         update(time) { this.time = time; }
-
         draw(ctx) {
             const s = this.scale;
-            const breathe = 1 + Math.sin(this.time * 2) * 0.02;
-            
-            // 树枝
+            const breathe = 1 + Math.sin(this.time * 2) * 0.02 * window.breatheIntensity;
             this.drawBranches(ctx, s);
-            
-            // 花朵簇
             this.drawFlowerClusters(ctx, s, breathe);
-            
-            // 飘落的花瓣
             this.drawFallingPetals(ctx, s);
         }
-
         drawBranches(ctx, s) {
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            
+            ctx.save(); ctx.translate(this.x, this.y);
             const sway = Math.sin(this.time * 0.8) * 2 * s;
-            
-            // 主干
             const trunkGrad = ctx.createLinearGradient(-10 * s, 0, 10 * s, 0);
-            trunkGrad.addColorStop(0, '#4a3020');
-            trunkGrad.addColorStop(0.5, '#6a4535');
-            trunkGrad.addColorStop(1, '#4a3020');
-            
+            trunkGrad.addColorStop(0, '#4a3020'); trunkGrad.addColorStop(0.5, '#6a4535'); trunkGrad.addColorStop(1, '#4a3020');
             ctx.beginPath();
-            ctx.moveTo(-15 * s, 0);
-            ctx.quadraticCurveTo(-5 * s + sway, -100 * s, 0, -180 * s);
+            ctx.moveTo(-15 * s, 0); ctx.quadraticCurveTo(-5 * s + sway, -100 * s, 0, -180 * s);
             ctx.quadraticCurveTo(5 * s + sway, -100 * s, 15 * s, 0);
-            ctx.closePath();
-            ctx.fillStyle = trunkGrad;
-            ctx.fill();
-            
-            // 分支
-            const branches = [
-                { start: -100, angle: -60, length: 80 },
-                { start: -130, angle: 50, length: 70 },
-                { start: -150, angle: -40, length: 60 },
-            ];
-            
+            ctx.closePath(); ctx.fillStyle = trunkGrad; ctx.fill();
+            const branches = [{ start: -100, angle: -60, length: 80 }, { start: -130, angle: 50, length: 70 }, { start: -150, angle: -40, length: 60 }];
             branches.forEach(b => {
-                ctx.save();
-                ctx.translate(sway * (1 - b.start / -180), b.start * s);
-                ctx.rotate(b.angle * Math.PI / 180);
-                
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(b.length * s, 0);
-                ctx.strokeStyle = '#5a4030';
-                ctx.lineWidth = 8 * s;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                
+                ctx.save(); ctx.translate(sway * (1 - b.start / -180), b.start * s); ctx.rotate(b.angle * Math.PI / 180);
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(b.length * s, 0);
+                ctx.strokeStyle = '#5a4030'; ctx.lineWidth = 8 * s; ctx.lineCap = 'round'; ctx.stroke();
                 ctx.restore();
             });
-            
             ctx.restore();
         }
-
         drawFlowerClusters(ctx, s, breathe) {
-            const positions = [
-                { x: -120, y: -150, count: 5 },
-                { x: 80, y: -120, count: 4 },
-                { x: -60, y: -180, count: 6 },
-                { x: 50, y: -160, count: 4 },
-                { x: 0, y: -200, count: 5 },
-                { x: -150, y: -100, count: 3 },
-                { x: 120, y: -140, count: 4 },
-            ];
-            
+            const positions = [{ x: -120, y: -150, count: 5 }, { x: 80, y: -120, count: 4 }, { x: -60, y: -180, count: 6 }, { x: 50, y: -160, count: 4 }, { x: 0, y: -200, count: 5 }, { x: -150, y: -100, count: 3 }, { x: 120, y: -140, count: 4 }];
             const sway = Math.sin(this.time * 0.8) * 2 * s;
-            
             positions.forEach(pos => {
-                const tx = this.x + sway * (1 - pos.y / -200);
-                const ty = this.y + pos.y * s;
+                const tx = this.x + sway * (1 - pos.y / -200); const ty = this.y + pos.y * s;
                 this.drawFlowerCluster(ctx, tx, ty, pos.count, breathe, s);
             });
         }
-
         drawFlowerCluster(ctx, x, y, count, breathe, s) {
-            const petalCount = 5;
-            const petalSize = 15 * s * breathe;
-            
+            const petalCount = 5; const petalSize = 15 * s * breathe;
             for (let c = 0; c < count; c++) {
-                const offsetX = (Math.random() - 0.5) * 20 * s;
-                const offsetY = (Math.random() - 0.5) * 20 * s;
+                const offsetX = (Math.random() - 0.5) * 20 * s; const offsetY = (Math.random() - 0.5) * 20 * s;
                 const clusterSway = Math.sin(this.time * 1.5 + c) * 2 * s;
-                
-                ctx.save();
-                ctx.translate(x + offsetX + clusterSway, y + offsetY);
-                
+                ctx.save(); ctx.translate(x + offsetX + clusterSway, y + offsetY);
                 for (let i = 0; i < petalCount; i++) {
                     const angle = (360 / petalCount) * i;
                     this.drawCherryPetal(ctx, angle, petalSize, s);
                 }
-                
-                // 花蕊
-                ctx.beginPath();
-                ctx.arc(0, 0, 3 * s, 0, Math.PI * 2);
-                ctx.fillStyle = '#f0d000';
-                ctx.fill();
-                
+                ctx.beginPath(); ctx.arc(0, 0, 3 * s, 0, Math.PI * 2); ctx.fillStyle = '#f0d000'; ctx.fill();
                 ctx.restore();
             }
         }
-
         drawCherryPetal(ctx, angle, size, s) {
-            ctx.save();
-            ctx.rotate(angle * Math.PI / 180);
-            
+            ctx.save(); ctx.rotate(angle * Math.PI / 180);
             const petalGrad = ctx.createRadialGradient(0, -size * 0.3, 0, 0, 0, size);
-            petalGrad.addColorStop(0, 'rgba(255, 200, 210, 0.95)');
-            petalGrad.addColorStop(0.5, 'rgba(255, 180, 195, 0.9)');
-            petalGrad.addColorStop(1, 'rgba(255, 160, 180, 0.7)');
-            
-            ctx.beginPath();
-            ctx.ellipse(0, -size * 0.5, size * 0.5, size * 0.7, 0, 0, Math.PI * 2);
-            ctx.fillStyle = petalGrad;
-            ctx.fill();
-            
-            // 花瓣缺口
-            ctx.beginPath();
-            ctx.arc(0, -size * 0.7, size * 0.15, 0, Math.PI, true);
-            ctx.fillStyle = 'rgba(200, 150, 160, 0.5)';
-            ctx.fill();
-            
-            ctx.restore();
+            petalGrad.addColorStop(0, 'rgba(255, 200, 210, 0.95)'); petalGrad.addColorStop(0.5, 'rgba(255, 180, 195, 0.9)'); petalGrad.addColorStop(1, 'rgba(255, 160, 180, 0.7)');
+            ctx.beginPath(); ctx.ellipse(0, -size * 0.5, size * 0.5, size * 0.7, 0, 0, Math.PI * 2); ctx.fillStyle = petalGrad; ctx.fill();
+            ctx.beginPath(); ctx.arc(0, -size * 0.7, size * 0.15, 0, Math.PI, true);
+            ctx.fillStyle = 'rgba(200, 150, 160, 0.5)'; ctx.fill(); ctx.restore();
         }
-
         drawFallingPetals(ctx, s) {
             ctx.save();
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 20; i++) {
                 const px = this.x + (Math.sin(this.time * 0.5 + i * 2) * 200 + 100) * s;
                 const py = ((this.time * 30 + i * 50) % 500) * s;
                 const rotation = this.time * 3 + i;
-                
-                ctx.save();
-                ctx.translate(px, py);
-                ctx.rotate(rotation);
-                ctx.globalAlpha = 0.6;
-                
-                ctx.beginPath();
-                ctx.ellipse(0, -5 * s, 5 * s, 8 * s, 0, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, ${180 + i * 3}, ${190 + i * 2}, 0.7)`;
-                ctx.fill();
-                
+                ctx.save(); ctx.translate(px, py); ctx.rotate(rotation); ctx.globalAlpha = 0.6;
+                ctx.beginPath(); ctx.ellipse(0, -5 * s, 5 * s, 8 * s, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, ${180 + i * 3}, ${190 + i * 2}, 0.7)`; ctx.fill();
                 ctx.restore();
             }
             ctx.restore();
@@ -1222,131 +782,362 @@
 
     // ==================== 雏菊类 ====================
     class Daisy {
-        constructor(x, y, scale = 1) {
-            this.x = x; this.y = y; this.scale = scale;
-            this.time = 0;
-        }
-
+        constructor(x, y, scale = 1) { this.x = x; this.y = y; this.scale = scale; this.time = 0; }
         update(time) { this.time = time; }
-
         draw(ctx) {
             const s = this.scale;
-            const breathe = 1 + Math.sin(this.time * 2) * 0.02;
-            
-            // 花杆
-            this.drawStem(ctx, s);
-            
-            // 叶子
-            this.drawLeaves(ctx, s);
-            
-            // 花朵
+            const breathe = 1 + Math.sin(this.time * 2) * 0.02 * window.breatheIntensity;
+            this.drawStem(ctx, s); this.drawLeaves(ctx, s);
             this.drawFlower(ctx, s, breathe);
         }
-
         drawStem(ctx, s) {
-            const height = 200 * s;
-            const sway = Math.sin(this.time * 1.5) * 3 * s;
-            
+            const height = 200 * s; const sway = Math.sin(this.time * 1.5) * 3 * s;
             const stemGrad = ctx.createLinearGradient(0, 0, 0, height);
-            stemGrad.addColorStop(0, '#3d7a37');
-            stemGrad.addColorStop(1, '#4d8a47');
-            
+            stemGrad.addColorStop(0, '#3d7a37'); stemGrad.addColorStop(1, '#4d8a47');
             ctx.beginPath();
-            ctx.moveTo(-4 * s, 0);
-            ctx.quadraticCurveTo(sway, height * 0.5, -2 * s + sway, height);
-            ctx.lineTo(2 * s + sway, height);
-            ctx.quadraticCurveTo(sway, height * 0.5, 4 * s, 0);
-            ctx.closePath();
-            ctx.fillStyle = stemGrad;
-            ctx.fill();
+            ctx.moveTo(-4 * s, 0); ctx.quadraticCurveTo(sway, height * 0.5, -2 * s + sway, height);
+            ctx.lineTo(2 * s + sway, height); ctx.quadraticCurveTo(sway, height * 0.5, 4 * s, 0);
+            ctx.closePath(); ctx.fillStyle = stemGrad; ctx.fill();
         }
-
         drawLeaves(ctx, s) {
-            const leaves = [
-                { y: 80, angle: -35, size: 0.7 },
-                { y: 120, angle: 40, size: 0.8 },
-            ];
-            
+            const leaves = [{ y: 80, angle: -35, size: 0.7 }, { y: 120, angle: 40, size: 0.8 }];
             leaves.forEach(leaf => {
                 const sway = Math.sin(this.time * 1.5) * 3 * s * (leaf.y / 200);
                 this.drawDaisyLeaf(ctx, this.x + sway, this.y + leaf.y * s, leaf.angle, leaf.size * s);
             });
         }
-
         drawDaisyLeaf(ctx, x, y, angle, size) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle * Math.PI / 180);
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
+            ctx.beginPath(); ctx.moveTo(0, 0);
             ctx.bezierCurveTo(10 * size, -8 * size, 25 * size, -12 * size, 35 * size, 0);
             ctx.bezierCurveTo(25 * size, 12 * size, 10 * size, 8 * size, 0, 0);
-            ctx.fillStyle = '#3d7a37';
-            ctx.fill();
-            
-            ctx.restore();
+            ctx.fillStyle = '#3d7a37'; ctx.fill(); ctx.restore();
         }
-
         drawFlower(ctx, s, breathe) {
-            const centerY = this.y - 200 * s;
-            const sway = Math.sin(this.time * 1.5) * 3 * s;
-            
-            ctx.save();
-            ctx.translate(this.x + sway, centerY);
-            
-            const petalCount = 21;
-            const petalSize = 30 * s * breathe;
-            
-            // 白色花瓣
+            const centerY = this.y - 200 * s; const sway = Math.sin(this.time * 1.5) * 3 * s;
+            ctx.save(); ctx.translate(this.x + sway, centerY);
+            const petalCount = 21; const petalSize = 30 * s * breathe;
             for (let i = 0; i < petalCount; i++) {
                 const angle = (360 / petalCount) * i;
                 this.drawDaisyPetal(ctx, angle, petalSize, s);
             }
-            
-            // 黄色花心
             const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 20 * s);
-            centerGrad.addColorStop(0, '#f0e020');
-            centerGrad.addColorStop(0.5, '#e4c010');
-            centerGrad.addColorStop(1, '#d4a000');
-            
-            ctx.beginPath();
-            ctx.arc(0, 0, 20 * s, 0, Math.PI * 2);
-            ctx.fillStyle = centerGrad;
-            ctx.fill();
-            
-            // 花心纹理
+            centerGrad.addColorStop(0, '#f0e020'); centerGrad.addColorStop(0.5, '#e4c010'); centerGrad.addColorStop(1, '#d4a000');
+            ctx.beginPath(); ctx.arc(0, 0, 20 * s, 0, Math.PI * 2); ctx.fillStyle = centerGrad; ctx.fill();
             for (let ring = 0; ring < 3; ring++) {
-                const r = 5 + ring * 5 * s;
-                const dots = 6 + ring * 4;
+                const r = 5 + ring * 5 * s; const dots = 6 + ring * 4;
                 for (let i = 0; i < dots; i++) {
                     const angle = (360 / dots) * i + ring * 10;
                     ctx.beginPath();
                     ctx.arc(Math.cos(angle * Math.PI / 180) * r, Math.sin(angle * Math.PI / 180) * r, 1.5 * s, 0, Math.PI * 2);
-                    ctx.fillStyle = '#b08000';
-                    ctx.fill();
+                    ctx.fillStyle = '#b08000'; ctx.fill();
                 }
             }
-            
             ctx.restore();
         }
-
         drawDaisyPetal(ctx, angle, size, s) {
-            ctx.save();
-            ctx.rotate(angle * Math.PI / 180);
-            
+            ctx.save(); ctx.rotate(angle * Math.PI / 180);
             const petalGrad = ctx.createLinearGradient(0, 0, 0, -size);
-            petalGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-            petalGrad.addColorStop(0.5, 'rgba(250, 250, 250, 0.9)');
-            petalGrad.addColorStop(1, 'rgba(240, 240, 240, 0.8)');
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.ellipse(0, -size * 0.6, size * 0.25, size * 0.6, 0, 0, Math.PI * 2);
-            ctx.fillStyle = petalGrad;
-            ctx.fill();
-            
+            petalGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)'); petalGrad.addColorStop(0.5, 'rgba(250, 250, 250, 0.9)'); petalGrad.addColorStop(1, 'rgba(240, 240, 240, 0.8)');
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.ellipse(0, -size * 0.6, size * 0.25, size * 0.6, 0, 0, Math.PI * 2);
+            ctx.fillStyle = petalGrad; ctx.fill(); ctx.restore();
+        }
+    }
+
+    // ==================== 薰衣草类 ====================
+    class Lavender {
+        constructor(x, y, scale = 1) { this.x = x; this.y = y; this.scale = scale; this.time = 0; }
+        update(time) { this.time = time; }
+        draw(ctx) {
+            const s = this.scale;
+            const sway = Math.sin(this.time * 1.8) * 2 * s;
+            ctx.save(); ctx.translate(this.x, this.y);
+            this.drawStem(ctx, s, sway); this.drawLeaves(ctx, s, sway);
+            this.drawFlowerSpike(ctx, s, sway);
             ctx.restore();
+        }
+        drawStem(ctx, s, sway) {
+            const height = 350 * s;
+            const stemGrad = ctx.createLinearGradient(0, 0, 0, height);
+            stemGrad.addColorStop(0, '#2d6a27'); stemGrad.addColorStop(0.5, '#4d8a37'); stemGrad.addColorStop(1, '#3d7a27');
+            ctx.beginPath();
+            ctx.moveTo(-3 * s, 0); ctx.quadraticCurveTo(sway * 0.5, height * 0.5, -2 * s + sway, height);
+            ctx.lineTo(2 * s + sway, height); ctx.quadraticCurveTo(sway * 0.5, height * 0.5, 3 * s, 0);
+            ctx.closePath(); ctx.fillStyle = stemGrad; ctx.fill();
+        }
+        drawLeaves(ctx, s, sway) {
+            for (let i = 0; i < 4; i++) {
+                const ty = 80 + i * 40; const tx = sway * (ty / 350);
+                this.drawLavenderLeaf(ctx, this.x + tx, this.y + ty * s, i % 2 === 0 ? -30 : 30, 0.6 * s);
+            }
+        }
+        drawLavenderLeaf(ctx, x, y, angle, size) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
+            ctx.beginPath(); ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(5 * size, -3 * size, 15 * size, -5 * size, 25 * size, 0);
+            ctx.bezierCurveTo(15 * size, 5 * size, 5 * size, 3 * size, 0, 0);
+            ctx.fillStyle = '#3d8a37'; ctx.fill(); ctx.restore();
+        }
+        drawFlowerSpike(ctx, s, sway) {
+            const baseY = this.y - 350 * s; const height = 120 * s;
+            for (let i = 0; i < 6; i++) {
+                const angle = (360 / 6) * i + Math.sin(this.time) * 3;
+                const spikeX = Math.cos(angle * Math.PI / 180) * 15 * s;
+                this.drawSingleSpike(ctx, this.x + sway + spikeX, baseY, height * (0.8 + Math.random() * 0.4), s);
+            }
+        }
+        drawSingleSpike(ctx, x, y, height, s) {
+            ctx.save(); ctx.translate(x, y);
+            for (let i = 0; i < 12; i++) {
+                const py = -i * (height / 12);
+                const size = 4 * s * (1 - i / 15);
+                const alpha = 0.6 + Math.sin(this.time * 2 + i * 0.5) * 0.2;
+                const hue = 270 + Math.sin(this.time + i * 0.3) * 10;
+                ctx.beginPath(); ctx.ellipse(0, py, size, size * 1.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${hue}, 60%, 60%, ${alpha})`; ctx.fill();
+            }
+            ctx.restore();
+        }
+    }
+
+    // ==================== 牡丹类 ====================
+    class Peony {
+        constructor(x, y, scale = 1) { this.x = x; this.y = y; this.scale = scale; this.time = 0; }
+        update(time) { this.time = time; }
+        draw(ctx) {
+            const s = this.scale;
+            const breathe = 1 + Math.sin(this.time * 1.5) * 0.04 * window.breatheIntensity;
+            this.drawStem(ctx, s); this.drawLeaves(ctx, s);
+            this.drawPeonyFlower(ctx, s, breathe);
+        }
+        drawStem(ctx, s) {
+            const height = 250 * s; const sway = Math.sin(this.time * 1.2) * 3 * s;
+            const stemGrad = ctx.createLinearGradient(0, 0, 0, height);
+            stemGrad.addColorStop(0, '#2d5a27'); stemGrad.addColorStop(0.5, '#3d7a37'); stemGrad.addColorStop(1, '#2d6a27');
+            ctx.beginPath();
+            ctx.moveTo(-8 * s, 0); ctx.quadraticCurveTo(sway, height * 0.5, -5 * s + sway, height);
+            ctx.lineTo(5 * s + sway, height); ctx.quadraticCurveTo(sway, height * 0.5, 8 * s, 0);
+            ctx.closePath(); ctx.fillStyle = stemGrad; ctx.fill();
+        }
+        drawLeaves(ctx, s) {
+            const leaves = [{ y: 80, angle: -40, size: 1.2 }, { y: 130, angle: 45, size: 1.1 }, { y: 180, angle: -35, size: 0.9 }];
+            leaves.forEach(leaf => {
+                const sway = Math.sin(this.time * 1.2) * 3 * s * (leaf.y / 250);
+                this.drawPeonyLeaf(ctx, this.x + sway, this.y + leaf.y * s, leaf.angle, leaf.size * s);
+            });
+        }
+        drawPeonyLeaf(ctx, x, y, angle, size) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
+            const leafGrad = ctx.createLinearGradient(0, 0, 70 * size, 0);
+            leafGrad.addColorStop(0, '#2d6a27'); leafGrad.addColorStop(0.5, '#3d8a37'); leafGrad.addColorStop(1, '#2d7a27');
+            ctx.beginPath(); ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(20 * size, -15 * size, 50 * size, -20 * size, 70 * size, 0);
+            ctx.bezierCurveTo(50 * size, 20 * size, 20 * size, 15 * size, 0, 0);
+            ctx.fillStyle = leafGrad; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(60 * size, 0);
+            ctx.strokeStyle = '#2d5a27'; ctx.lineWidth = 2 * size; ctx.stroke();
+            ctx.restore();
+        }
+        drawPeonyFlower(ctx, s, breathe) {
+            const centerY = this.y - 250 * s; const sway = Math.sin(this.time * 1.2) * 3 * s;
+            ctx.save(); ctx.translate(this.x + sway, centerY);
+            const baseSize = 55 * s * breathe;
+            // 多层花瓣 - 牡丹有很多层
+            const layers = [
+                { count: 5, size: 1.3, h: 330, offset: 36 },
+                { count: 6, size: 1.1, h: 335, offset: 30 },
+                { count: 8, size: 0.9, h: 340, offset: 22 },
+                { count: 10, size: 0.75, h: 345, offset: 18 },
+                { count: 12, size: 0.6, h: 350, offset: 15 },
+                { count: 15, size: 0.45, h: 345, offset: 12 },
+            ];
+            layers.forEach((layer, idx) => {
+                for (let i = 0; i < layer.count; i++) {
+                    const angle = (360 / layer.count) * i + layer.offset + Math.sin(this.time + idx) * 3;
+                    this.drawPeonyPetal(ctx, angle, baseSize * layer.size, layer.h, 0.5 + idx * 0.07, s);
+                }
+            });
+            this.drawPeonyCenter(ctx, 0, 0, baseSize * 0.3, s);
+            ctx.restore();
+        }
+        drawPeonyPetal(ctx, angle, size, hue, opacity, s) {
+            ctx.save(); ctx.rotate(angle * Math.PI / 180); ctx.translate(0, size * 0.2);
+            const petalGrad = ctx.createRadialGradient(0, -size * 0.3, 0, 0, -size * 0.5, size);
+            petalGrad.addColorStop(0, `hsla(${hue}, 50%, 75%, ${opacity})`);
+            petalGrad.addColorStop(0.5, `hsla(${hue + 5}, 55%, 65%, ${opacity * 0.8})`);
+            petalGrad.addColorStop(1, `hsla(${hue - 5}, 50%, 55%, ${opacity * 0.5})`);
+            ctx.beginPath(); ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(-size * 0.5, -size * 0.2, -size * 0.6, -size * 0.7, 0, -size);
+            ctx.bezierCurveTo(size * 0.6, -size * 0.7, size * 0.5, -size * 0.2, 0, 0);
+            ctx.fillStyle = petalGrad; ctx.fill();
+            ctx.restore();
+        }
+        drawPeonyCenter(ctx, x, y, size, s) {
+            const centerGrad = ctx.createRadialGradient(x, y, 0, x, y, size);
+            centerGrad.addColorStop(0, '#f0d060'); centerGrad.addColorStop(0.6, '#d4a030'); centerGrad.addColorStop(1, '#a07020');
+            ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fillStyle = centerGrad; ctx.fill();
+            for (let i = 0; i < 20; i++) {
+                const angle = (360 / 20) * i; const r = size * 0.5;
+                ctx.beginPath();
+                ctx.ellipse(x + Math.cos(angle * Math.PI / 180) * r, y + Math.sin(angle * Math.PI / 180) * r, 2 * s, 3 * s, angle * Math.PI / 180, 0, Math.PI * 2);
+                ctx.fillStyle = '#c09020'; ctx.fill();
+            }
+        }
+    }
+
+    // ==================== 蒲公英类 ====================
+    class Dandelion {
+        constructor(x, y, scale = 1) { this.x = x; this.y = y; this.scale = scale; this.time = 0; }
+        update(time) { this.time = time; }
+        draw(ctx) {
+            const s = this.scale;
+            this.drawStem(ctx, s); this.drawLeaves(ctx, s);
+            this.drawDandelionHead(ctx, s);
+            this.drawFloatingSeeds(ctx, s);
+        }
+        drawStem(ctx, s) {
+            const height = 200 * s; const sway = Math.sin(this.time * 1.5) * 2 * s;
+            const stemGrad = ctx.createLinearGradient(0, 0, 0, height);
+            stemGrad.addColorStop(0, '#3d7a37'); stemGrad.addColorStop(1, '#4d8a47');
+            ctx.beginPath();
+            ctx.moveTo(-4 * s, 0); ctx.quadraticCurveTo(sway, height * 0.5, -2 * s + sway, height);
+            ctx.lineTo(2 * s + sway, height); ctx.quadraticCurveTo(sway, height * 0.5, 4 * s, 0);
+            ctx.closePath(); ctx.fillStyle = stemGrad; ctx.fill();
+        }
+        drawLeaves(ctx, s) {
+            const leaves = [{ y: 60, angle: -50, size: 1 }, { y: 100, angle: 55, size: 0.9 }];
+            leaves.forEach(leaf => {
+                const sway = Math.sin(this.time * 1.5) * 2 * s * (leaf.y / 200);
+                this.drawDandelionLeaf(ctx, this.x + sway, this.y + leaf.y * s, leaf.angle, leaf.size * s);
+            });
+        }
+        drawDandelionLeaf(ctx, x, y, angle, size) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180);
+            ctx.beginPath(); ctx.moveTo(0, 0);
+            for (let i = 0; i < 8; i++) {
+                const lx = 5 + i * 5 * size; const ly = Math.sin(i * 0.8) * 8 * size;
+                ctx.lineTo(lx, ly);
+            }
+            ctx.lineTo(45 * size, 0);
+            for (let i = 7; i >= 0; i--) {
+                const lx = 5 + i * 5 * size; const ly = -Math.sin(i * 0.8) * 8 * size;
+                ctx.lineTo(lx, ly);
+            }
+            ctx.closePath(); ctx.fillStyle = '#3d8a37'; ctx.fill(); ctx.restore();
+        }
+        drawDandelionHead(ctx, s) {
+            const centerY = this.y - 200 * s; const sway = Math.sin(this.time * 1.5) * 2 * s;
+            ctx.save(); ctx.translate(this.x + sway, centerY);
+            // 种子球
+            const ballGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 25 * s);
+            ballGrad.addColorStop(0, '#e8e0d0'); ballGrad.addColorStop(0.7, '#d0c8b8'); ballGrad.addColorStop(1, '#b0a898');
+            ctx.beginPath(); ctx.arc(0, 0, 25 * s, 0, Math.PI * 2); ctx.fillStyle = ballGrad; ctx.fill();
+            // 冠毛
+            for (let i = 0; i < 50; i++) {
+                const angle = (360 / 50) * i + Math.sin(this.time + i * 0.2) * 5;
+                const len = 20 + Math.random() * 10 * s;
+                ctx.beginPath(); ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(angle * Math.PI / 180) * len, Math.sin(angle * Math.PI / 180) * len);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.6 + Math.random() * 0.3})`;
+                ctx.lineWidth = 0.5 * s; ctx.stroke();
+            }
+            ctx.restore();
+        }
+        drawFloatingSeeds(ctx, s) {
+            ctx.save();
+            for (let i = 0; i < 15; i++) {
+                const px = this.x + (Math.sin(this.time * 0.3 + i * 1.5) * 150 + 50) * s;
+                const py = this.y - 200 * s - 50 * s - (this.time * 20 + i * 30) % 200 * s;
+                const alpha = 1 - ((this.time * 20 + i * 30) % 200) / 200;
+                this.drawSingleSeed(ctx, px, py, s, alpha);
+            }
+            ctx.restore();
+        }
+        drawSingleSeed(ctx, x, y, s, alpha) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(this.time + x * 0.01);
+            ctx.beginPath(); ctx.ellipse(0, 0, 3 * s, 6 * s, 0, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(200, 180, 150, ${alpha})`; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, -6 * s);
+            ctx.lineTo(0, -15 * s); ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.lineWidth = 0.5 * s; ctx.stroke();
+            for (let i = 0; i < 5; i++) {
+                const angle = -30 + i * 15;
+                ctx.beginPath(); ctx.moveTo(0, -8 * s);
+                ctx.lineTo(Math.cos(angle * Math.PI / 180) * 8 * s, -8 * s + Math.sin(angle * Math.PI / 180) * 8 * s);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.7})`; ctx.lineWidth = 0.3 * s; ctx.stroke();
+            }
+            ctx.restore();
+        }
+    }
+
+    // ==================== 萤火虫类 ====================
+    class Firefly {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 1;
+            this.speedX = (Math.random() - 0.5) * 0.5;
+            this.speedY = (Math.random() - 0.5) * 0.5;
+            this.glowPhase = Math.random() * Math.PI * 2;
+            this.glowSpeed = Math.random() * 0.05 + 0.02;
+        }
+        update() {
+            this.x += this.speedX + Math.sin(this.glowPhase * 0.5) * 0.3;
+            this.y += this.speedY + Math.cos(this.glowPhase * 0.5) * 0.3;
+            this.glowPhase += this.glowSpeed;
+            if (this.x < 0) this.x = this.canvas.width;
+            if (this.x > this.canvas.width) this.x = 0;
+            if (this.y < 0) this.y = this.canvas.height;
+            if (this.y > this.canvas.height) this.y = 0;
+        }
+        draw(ctx) {
+            const glow = 0.3 + Math.sin(this.glowPhase) * 0.5 + 0.2;
+            const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 8);
+            gradient.addColorStop(0, `rgba(200, 255, 100, ${glow})`);
+            gradient.addColorStop(0.3, `rgba(150, 220, 50, ${glow * 0.5})`);
+            gradient.addColorStop(1, 'transparent');
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size * 8, 0, Math.PI * 2);
+            ctx.fillStyle = gradient; ctx.fill();
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(220, 255, 150, ${glow})`; ctx.fill();
+        }
+    }
+
+    // ==================== 流星类 ====================
+    class ShootingStar {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.reset();
+        }
+        reset() {
+            this.x = Math.random() * this.canvas.width * 0.5;
+            this.y = 0;
+            this.length = Math.random() * 80 + 40;
+            this.speed = Math.random() * 8 + 4;
+            this.angle = Math.PI / 4 + (Math.random() - 0.5) * 0.3;
+            this.life = 1;
+            this.decay = Math.random() * 0.02 + 0.01;
+        }
+        update() {
+            this.x += Math.cos(this.angle) * this.speed;
+            this.y += Math.sin(this.angle) * this.speed;
+            this.life -= this.decay;
+            if (this.life <= 0 || this.y > this.canvas.height) {
+                if (Math.random() < 0.01) this.reset();
+            }
+        }
+        draw(ctx) {
+            if (this.life <= 0) return;
+            const tailX = this.x - Math.cos(this.angle) * this.length;
+            const tailY = this.y - Math.sin(this.angle) * this.length;
+            const gradient = ctx.createLinearGradient(tailX, tailY, this.x, this.y);
+            gradient.addColorStop(0, 'transparent');
+            gradient.addColorStop(1, `rgba(255, 255, 255, ${this.life})`);
+            ctx.beginPath(); ctx.moveTo(tailX, tailY); ctx.lineTo(this.x, this.y);
+            ctx.strokeStyle = gradient; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.stroke();
+            ctx.beginPath(); ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`; ctx.fill();
         }
     }
 
@@ -1363,179 +1154,194 @@
             this.trail = [];
             this.maxTrail = 8;
         }
-
-        update(targetX, targetY) {
+        update(targetX, targetY, audioLevel = 0) {
             this.trail.unshift({ x: this.x, y: this.y });
             if (this.trail.length > this.maxTrail) this.trail.pop();
-
             const dx = targetX - this.x;
             const dy = targetY - this.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-
             if (dist > 5) {
-                this.vx += (dx / dist) * 0.05;
-                this.vy += (dy / dist) * 0.05;
+                this.vx += (dx / dist) * (0.05 + audioLevel * 0.1);
+                this.vy += (dy / dist) * (0.05 + audioLevel * 0.1);
             }
-
-            this.vx *= 0.98;
-            this.vy *= 0.98;
-
-            this.x += this.vx;
-            this.y += this.vy;
-
+            this.vx *= 0.98; this.vy *= 0.98;
+            this.x += this.vx; this.y += this.vy;
             this.life -= this.decay;
             this.hue = (this.hue + 0.5) % 360;
         }
-
         draw(ctx) {
-            // 拖尾
             for (let i = 0; i < this.trail.length; i++) {
                 const t = this.trail[i];
                 const alpha = (1 - i / this.maxTrail) * this.life * 0.5;
                 const size = this.size * (1 - i / this.maxTrail * 0.5);
-                ctx.beginPath();
-                ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
-                ctx.fillStyle = `hsla(${this.hue}, 80%, 60%, ${alpha})`;
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 80%, 60%, ${alpha})`; ctx.fill();
             }
-
-            // 发光
             const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 4);
             glow.addColorStop(0, `hsla(${this.hue}, 100%, 90%, ${this.life})`);
             glow.addColorStop(0.3, `hsla(${this.hue}, 80%, 60%, ${this.life * 0.5})`);
             glow.addColorStop(1, 'transparent');
-            ctx.fillStyle = glow;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 核心
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`;
-            ctx.fill();
+            ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`; ctx.fill();
         }
     }
 
     // ==================== 主系统 ====================
     class FlowerSystem {
         constructor(canvas) {
-            this.canvas = canvas;
-            this.ctx = canvas.getContext('2d');
-            this.time = 0;
-            this.isAnimating = true;
-            this.currentFlower = 'rose';
-            this.flower = null;
-            this.particles = [];
-            this.mouseX = null;
-            this.mouseY = null;
-            this.fps = 60;
-            this.frameCount = 0;
-            this.lastTime = 0;
-
-            this.resize();
-            this.initFlower();
-            this.setupEvents();
-            this.animate();
+            this.canvas = canvas; this.ctx = canvas.getContext('2d');
+            this.time = 0; this.isAnimating = true; this.currentFlower = 'rose';
+            this.flower = null; this.particles = []; this.fireflies = [];
+            this.shootingStars = []; this.mouseX = null; this.mouseY = null;
+            this.fps = 60; this.frameCount = 0; this.lastTime = 0;
+            this.audioContext = null; this.audioAnalyser = null; this.audioEnabled = false;
+            this.audioData = new Uint8Array(8);
+            this.isDayMode = false;
+            window.breatheIntensity = 0.5;
+            window.lineDistance = 80;
+            window.maxParticles = 50;
+            this.resize(); this.initFlower(); this.initFireflies(); this.initShootingStars();
+            this.setupEvents(); this.animate();
         }
-
         resize() {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-            this.centerX = this.canvas.width / 2;
-            this.centerY = this.canvas.height - 100;
+            this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight;
+            this.centerX = this.canvas.width / 2; this.centerY = this.canvas.height - 100;
         }
-
         initFlower() {
             const flowerMap = {
-                'rose': Rose,
-                'lotus': Lotus,
-                'sunflower': Sunflower,
-                'lily': Lily,
-                'tulip': Tulip,
-                'cherry': CherryBlossom,
-                'daisy': Daisy
+                'rose': Rose, 'lotus': Lotus, 'sunflower': Sunflower, 'lily': Lily,
+                'tulip': Tulip, 'cherry': CherryBlossom, 'daisy': Daisy,
+                'lavender': Lavender, 'peony': Peony, 'dandelion': Dandelion
             };
             this.flower = new flowerMap[this.currentFlower](this.centerX, this.centerY, 1);
             document.getElementById('flowerName').textContent = this.getFlowerName();
         }
-
         getFlowerName() {
             const names = {
-                'rose': '🌹 玫瑰',
-                'lotus': '🪷 莲花',
-                'sunflower': '🌻 向日葵',
-                'lily': '🌸 百合',
-                'tulip': '🌷 郁金香',
-                'cherry': '🌺 樱花',
-                'daisy': '🌼 雏菊'
+                'rose': '🌹 玫瑰', 'lotus': '🪷 莲花', 'sunflower': '🌻 向日葵', 'lily': '🌸 百合',
+                'tulip': '🌷 郁金香', 'cherry': '🌺 樱花', 'daisy': '🌼 雏菊',
+                'lavender': '💜 薰衣草', 'peony': '🌺 牡丹', 'dandelion': '🌼 蒲公英'
             };
             return names[this.currentFlower];
         }
-
+        initFireflies() {
+            this.fireflies = [];
+            for (let i = 0; i < 20; i++) {
+                this.fireflies.push(new Firefly(this.canvas));
+            }
+        }
+        initShootingStars() {
+            this.shootingStars = [];
+            for (let i = 0; i < 3; i++) {
+                const star = new ShootingStar(this.canvas);
+                star.x = Math.random() * this.canvas.width * 0.8;
+                star.y = Math.random() * this.canvas.height * 0.3;
+                this.shootingStars.push(star);
+            }
+        }
         setupEvents() {
-            window.addEventListener('resize', () => this.resize());
-
-            this.canvas.addEventListener('mousemove', (e) => {
-                this.mouseX = e.clientX;
-                this.mouseY = e.clientY;
-            });
-
-            this.canvas.addEventListener('mouseleave', () => {
-                this.mouseX = null;
-                this.mouseY = null;
-            });
-
+            window.addEventListener('resize', () => { this.resize(); this.initFireflies(); });
+            this.canvas.addEventListener('mousemove', (e) => { this.mouseX = e.clientX; this.mouseY = e.clientY; });
+            this.canvas.addEventListener('mouseleave', () => { this.mouseX = null; this.mouseY = null; });
             this.canvas.addEventListener('click', (e) => {
-                const clickX = e.clientX;
-                const clickY = e.clientY;
+                const clickX = e.clientX; const clickY = e.clientY;
                 for (let i = 0; i < 30; i++) {
                     const p = new Particle(clickX, clickY);
-                    p.vx = (Math.random() - 0.5) * 8;
-                    p.vy = (Math.random() - 0.5) * 8;
-                    p.hue = this.getFlowerHue();
-                    this.particles.push(p);
+                    p.vx = (Math.random() - 0.5) * 8; p.vy = (Math.random() - 0.5) * 8;
+                    p.hue = this.getFlowerHue(); this.particles.push(p);
                 }
             });
-
-            document.addEventListener('keydown', (e) => {
-                if (e.code === 'Space') {
-                    e.preventDefault();
-                    this.isAnimating = !this.isAnimating;
+            this.canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                for (let i = 0; i < 20; i++) {
+                    const p = new Particle(touch.clientX, touch.clientY);
+                    p.vx = (Math.random() - 0.5) * 8; p.vy = (Math.random() - 0.5) * 8;
+                    p.hue = this.getFlowerHue(); this.particles.push(p);
                 }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') { e.preventDefault(); this.isAnimating = !this.isAnimating; }
+                if (e.code === 'KeyM') this.toggleAudio();
+                if (e.code === 'KeyD') this.toggleDayMode();
+                if (e.code === 'KeyS') this.saveScreenshot();
+            });
+            // 设置面板事件
+            document.getElementById('particleSlider').addEventListener('input', (e) => {
+                window.maxParticles = parseInt(e.target.value);
+                document.getElementById('particleVal').textContent = e.target.value;
+            });
+            document.getElementById('lineSlider').addEventListener('input', (e) => {
+                window.lineDistance = parseInt(e.target.value);
+                document.getElementById('lineVal').textContent = e.target.value;
+            });
+            document.getElementById('breatheSlider').addEventListener('input', (e) => {
+                window.breatheIntensity = parseInt(e.target.value) / 100;
+                document.getElementById('breatheVal').textContent = e.target.value + '%';
             });
         }
-
         getFlowerHue() {
             const hues = {
-                'rose': 350,
-                'lotus': 340,
-                'sunflower': 45,
-                'lily': 330,
-                'tulip': 350,
-                'cherry': 330,
-                'daisy': 0
+                'rose': 350, 'lotus': 340, 'sunflower': 45, 'lily': 330,
+                'tulip': 350, 'cherry': 330, 'daisy': 0, 'lavender': 270, 'peony': 330, 'dandelion': 50
             };
             return hues[this.currentFlower] || 320;
         }
-
+        toggleAudio() {
+            if (!this.audioEnabled) {
+                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.audioAnalyser = this.audioContext.createAnalyser();
+                    const source = this.audioContext.createMediaStreamSource(stream);
+                    source.connect(this.audioAnalyser);
+                    this.audioAnalyser.fftSize = 256;
+                    this.audioData = new Uint8Array(this.audioAnalyser.frequencyBinCount);
+                    this.audioEnabled = true;
+                    document.getElementById('audioBtn').textContent = '🔇 关闭麦克风';
+                }).catch(err => {
+                    console.log('麦克风访问被拒绝');
+                    document.getElementById('audioBtn').textContent = '❌ 麦克风被拒绝';
+                });
+            } else {
+                if (this.audioContext) this.audioContext.close();
+                this.audioEnabled = false;
+                document.getElementById('audioBtn').textContent = '🎤 启用麦克风';
+            }
+        }
+        getAudioLevel() {
+            if (!this.audioEnabled || !this.audioAnalyser) return 0;
+            this.audioAnalyser.getByteFrequencyData(this.audioData);
+            let sum = 0;
+            for (let i = 0; i < 8; i++) {
+                sum += this.audioData[i];
+                const bar = document.getElementById('audioBars').children[i];
+                bar.style.height = (this.audioData[i] / 255 * 30) + 'px';
+            }
+            return (sum / 8) / 255;
+        }
+        toggleDayMode() {
+            this.isDayMode = !this.isDayMode;
+            document.body.classList.toggle('day-mode', this.isDayMode);
+            document.querySelector('.flower-controls .control-btn:nth-last-child(2)').textContent = this.isDayMode ? '☀️ 白天' : '🌙 黑夜';
+        }
+        saveScreenshot() {
+            const link = document.createElement('a');
+            link.download = 'flower-' + Date.now() + '.png';
+            link.href = this.canvas.toDataURL();
+            link.click();
+        }
         update() {
-            this.time += 0.016;
-            this.flower.time = this.time;
-
-            // 更新粒子
+            this.time += 0.016; this.flower.time = this.time;
+            const audioLevel = this.getAudioLevel();
             for (let i = this.particles.length - 1; i >= 0; i--) {
                 const p = this.particles[i];
                 const targetX = this.mouseX || this.centerX;
                 const targetY = this.mouseY || (this.centerY - 150);
-                p.update(targetX, targetY);
-                if (p.life <= 0) {
-                    this.particles.splice(i, 1);
-                }
+                p.update(targetX, targetY, audioLevel);
+                if (p.life <= 0) this.particles.splice(i, 1);
             }
-
-            // 周期性生成粒子
-            if (this.particles.length < 50 && Math.random() < 0.1) {
+            if (this.particles.length < window.maxParticles && Math.random() < 0.1) {
                 const angle = Math.random() * Math.PI * 2;
                 const dist = 100 + Math.random() * 100;
                 const x = this.centerX + Math.cos(angle) * dist;
@@ -1544,110 +1350,119 @@
                 p.hue = this.getFlowerHue() + (Math.random() - 0.5) * 40;
                 this.particles.push(p);
             }
-
+            this.fireflies.forEach(f => f.update());
+            this.shootingStars.forEach(s => s.update());
             document.getElementById('particleCount').textContent = this.particles.length;
-            document.getElementById('petalCount').textContent = '22-34';
-            document.getElementById('leafCount').textContent = this.currentFlower === 'lotus' ? '1' : '2-4';
+            document.getElementById('fireflyCount').textContent = this.fireflies.length;
+            document.getElementById('shootingStar').textContent = this.shootingStars.filter(s => s.life > 0).length;
         }
-
+        drawParticleLines() {
+            const ctx = this.ctx;
+            const maxDist = window.lineDistance;
+            ctx.strokeStyle = `rgba(100, 180, 220, 0.1)`;
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < this.particles.length; i++) {
+                for (let j = i + 1; j < this.particles.length; j++) {
+                    const p1 = this.particles[i]; const p2 = this.particles[j];
+                    const dx = p1.x - p2.x; const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < maxDist) {
+                        ctx.globalAlpha = (1 - dist / maxDist) * 0.3;
+                        ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    }
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
         draw() {
+            const ctx = this.ctx;
             // 背景渐变
-            const bgGrad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-            bgGrad.addColorStop(0, '#1a2a3a');
-            bgGrad.addColorStop(0.6, '#0f1a2a');
-            bgGrad.addColorStop(1, '#0a1520');
-            this.ctx.fillStyle = bgGrad;
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
+            if (this.isDayMode) {
+                const bgGrad = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+                bgGrad.addColorStop(0, '#87CEEB'); bgGrad.addColorStop(0.5, '#98D8C8'); bgGrad.addColorStop(1, '#F7DC6F');
+                ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                // 太阳
+                ctx.beginPath(); ctx.arc(this.canvas.width - 100, 80, 40, 0, Math.PI * 2);
+                const sunGrad = ctx.createRadialGradient(this.canvas.width - 100, 80, 0, this.canvas.width - 100, 80, 60);
+                sunGrad.addColorStop(0, 'rgba(255, 255, 200, 0.9)'); sunGrad.addColorStop(0.5, 'rgba(255, 220, 100, 0.5)'); sunGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = sunGrad; ctx.fill();
+                // 云朵
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                this.drawCloud(ctx, 150, 80, 0.8);
+                this.drawCloud(ctx, 400, 120, 0.6);
+                this.drawCloud(ctx, 700, 60, 1);
+            } else {
+                const bgGrad = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+                bgGrad.addColorStop(0, '#1a2a3a'); bgGrad.addColorStop(0.6, '#0f1a2a'); bgGrad.addColorStop(1, '#0a1520');
+                ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                // 星星
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                for (let i = 0; i < 50; i++) {
+                    const sx = (Math.sin(i * 123.456) * 0.5 + 0.5) * this.canvas.width;
+                    const sy = (Math.cos(i * 789.012) * 0.5 + 0.5) * this.canvas.height * 0.6;
+                    const size = 1 + Math.sin(this.time * 2 + i) * 0.5;
+                    ctx.beginPath(); ctx.arc(sx, sy, size, 0, Math.PI * 2); ctx.fill();
+                }
+            }
             // 地面
-            const groundGrad = this.ctx.createLinearGradient(0, this.canvas.height - 100, 0, this.canvas.height);
-            groundGrad.addColorStop(0, '#1a3020');
-            groundGrad.addColorStop(1, '#0a2010');
-            this.ctx.fillStyle = groundGrad;
-            this.ctx.fillRect(0, this.canvas.height - 100, this.canvas.width, 100);
-
-            // 背景粒子
-            this.ctx.globalAlpha = 0.3;
-            for (let i = 0; i < 30; i++) {
-                const x = (Math.sin(this.time * 0.3 + i * 0.5) * 0.5 + 0.5) * this.canvas.width;
-                const y = (Math.cos(this.time * 0.2 + i * 0.7) * 0.5 + 0.5) * this.canvas.height * 0.7;
-                const size = 1 + Math.sin(this.time + i) * 0.5;
-                this.ctx.beginPath();
-                this.ctx.arc(x, y, size, 0, Math.PI * 2);
-                this.ctx.fillStyle = `hsla(${this.getFlowerHue() + i * 10}, 50%, 70%, 0.5)`;
-                this.ctx.fill();
+            const groundGrad = ctx.createLinearGradient(0, this.canvas.height - 100, 0, this.canvas.height);
+            if (this.isDayMode) {
+                groundGrad.addColorStop(0, '#7dce82'); groundGrad.addColorStop(1, '#5db360');
+            } else {
+                groundGrad.addColorStop(0, '#1a3020'); groundGrad.addColorStop(1, '#0a2010');
             }
-            this.ctx.globalAlpha = 1;
-
+            ctx.fillStyle = groundGrad; ctx.fillRect(0, this.canvas.height - 100, this.canvas.width, 100);
+            // 萤火虫
+            this.fireflies.forEach(f => f.draw(ctx));
+            // 流星
+            this.shootingStars.forEach(s => s.draw(ctx));
+            // 粒子连线
+            this.drawParticleLines();
             // 绘制花朵
-            this.flower.draw(this.ctx);
-
+            this.flower.draw(ctx);
             // 绘制粒子
-            this.ctx.globalCompositeOperation = 'screen';
-            for (const p of this.particles) {
-                p.draw(this.ctx);
-            }
-            this.ctx.globalCompositeOperation = 'source-over';
+            ctx.globalCompositeOperation = 'screen';
+            for (const p of this.particles) p.draw(ctx);
+            ctx.globalCompositeOperation = 'source-over';
         }
-
+        drawCloud(ctx, x, y, scale) {
+            ctx.beginPath(); ctx.arc(x, y, 30 * scale, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + 30 * scale, y - 10 * scale, 25 * scale, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + 60 * scale, y, 30 * scale, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + 30 * scale, y + 10 * scale, 20 * scale, 0, Math.PI * 2); ctx.fill();
+        }
         animate(currentTime = 0) {
             if (!this.lastTime) this.lastTime = currentTime;
-            const delta = currentTime - this.lastTime;
-            this.lastTime = currentTime;
-
             this.frameCount++;
             if (currentTime - this.fpsTime > 1000) {
                 this.fps = Math.round((this.frameCount * 1000) / (currentTime - this.fpsTime || 1));
-                this.frameCount = 0;
-                this.fpsTime = currentTime;
+                this.frameCount = 0; this.fpsTime = currentTime;
                 document.getElementById('fpsDisplay').textContent = this.fps;
             }
-
-            if (this.isAnimating) {
-                this.update();
-                this.draw();
-            }
-
+            if (this.isAnimating) { this.update(); this.draw(); }
             requestAnimationFrame((t) => this.animate(t));
         }
-
-        changeFlower(type) {
-            this.currentFlower = type;
-            this.initFlower();
-            this.particles = [];
-        }
-
-        toggleAnimation() {
-            this.isAnimating = !this.isAnimating;
-        }
-
-        reset() {
-            this.initFlower();
-            this.particles = [];
-        }
+        changeFlower(type) { this.currentFlower = type; this.initFlower(); this.particles = []; }
+        toggleAnimation() { this.isAnimating = !this.isAnimating; }
+        reset() { this.initFlower(); this.particles = []; }
     }
 
-    // 全局实例
     let flowerSystem;
-
     window.addEventListener('DOMContentLoaded', () => {
         flowerSystem = new FlowerSystem(document.getElementById('flowerCanvas'));
     });
-
     function changeFlower(type) {
         flowerSystem.changeFlower(type);
-        document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.flower-controls .control-btn').forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
     }
-
     function toggleAnimation() {
         flowerSystem.toggleAnimation();
         event.target.textContent = flowerSystem.isAnimating ? '⏸️ 暂停' : '▶️ 继续';
     }
-
-    function resetSystem() {
-        flowerSystem.reset();
-    }
+    function toggleDayMode() { flowerSystem.toggleDayMode(); }
+    function toggleAudio() { flowerSystem.toggleAudio(); }
+    function resetSystem() { flowerSystem.reset(); }
     </script>
 </body>
 </html>
